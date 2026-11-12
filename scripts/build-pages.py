@@ -9,7 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html')
 STYLES = ('site.css', 'join.css', 'pages.css')
 SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js')
-LEGACY = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg', *STYLES, *SCRIPTS)
+LEGACY = (*STYLES, 'welcome.js', 'join.js', 'cms.js', 'account.js')
+PUBLIC = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg')
 
 STYLESHEET = re.compile(r'<link rel="stylesheet" href="/([\w.-]+\.css)">')
 DEFERRED = re.compile(r'[ \t]*<script src="/([\w.-]+\.js)" defer></script>\n?')
@@ -54,8 +55,10 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     shutil.copytree(ROOT / 'img', output / 'img', dirs_exist_ok=True)
     # These URLs remain available for documents opened before the bundled release.
-    for filename in LEGACY:
+    for filename in PUBLIC:
         shutil.copy2(ROOT / filename, output / filename)
+    for filename in LEGACY:
+        shutil.copy2(ROOT / 'legacy' / filename, output / filename)
     for filename in PAGES:
         target = output / filename
         target.parent.mkdir(parents=True, exist_ok=True)

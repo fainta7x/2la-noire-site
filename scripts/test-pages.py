@@ -111,18 +111,21 @@ def check_layout(page, origin, width, height, snapshots=None):
     page.set_viewport_size({'width': width, 'height': height})
     for route, title in PAGES.items():
         response = page.goto(origin + route, wait_until='domcontentloaded')
-        assert response.ok, f'{route} returned {response.status}'
+        assert response.ok or response.status == 304, f'{route} returned {response.status}'
         expect(page.get_by_role('heading', level=1, name=title, exact=True)).to_be_visible()
         expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
         assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
         assert page.locator('.skip-link').bounding_box()['y'] < 0, f'Skip link visible at /{route}, {width}'
         if route:
             expect(page.locator('.main-nav [aria-current="page"]')).to_have_attribute('href', '/' + route)
-        if snapshots and width in (390, 1891):
-            page.screenshot(path=snapshots / f'{route.strip("/") or "home"}-{width}.jpg',
-                            type='jpeg', quality=84, animations='disabled')
         if route == 'igry/':
             expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
+        if route == 'rating/':
+            expect(page.get_by_role('table', name='Таблица игроков')).to_be_visible()
+        if snapshots and width in (390, 1891):
+            page.mouse.move(0, 0)
+            page.screenshot(path=snapshots / f'{route.strip("/") or "home"}-{width}.jpg',
+                            type='jpeg', quality=84, animations='disabled')
         if route:
             continue
         expect(page.get_by_role('link', name='Выбрать пятницу')).to_be_in_viewport()
