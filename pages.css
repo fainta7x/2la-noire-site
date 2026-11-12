@@ -17,10 +17,11 @@ body.page{background:var(--ink);color:var(--text)}
 .rule-art {
   display: block;
   width: 100%;
-  aspect-ratio: var(--ratio);
+  max-width: 310px;
   margin: 14px 0;
   border-radius: 12px;
-  background: var(--sheet) var(--x) var(--y) / var(--size) auto no-repeat;
+  color: var(--violet-light);
+  background: linear-gradient(135deg, #38264d, #201729);
 }
 .doc-steps > li { display: flow-root; }
 .doc-steps .rule-art { float: right; width: clamp(94px, 18vw, 156px); margin: 0 0 10px 18px; }

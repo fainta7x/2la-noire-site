@@ -52,3 +52,12 @@ html.js .js-status { display: block; }
 @media (max-width: 760px) {
   .join-layout { grid-template-columns: minmax(0, 1fr); }
 }
+
+.join-board { grid-column: 1; grid-row: 2; padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--ink-raised); }
+.join-form-card { grid-column: 2; grid-row: 1 / span 2; }
+.join-capacity { width: 100%; height: 12px; accent-color: var(--violet-light); }
+.join-options input:checked + span { box-shadow: inset 0 0 0 1px var(--violet-light); font-weight: 650; }
+.join-field input:focus { border-color: var(--violet-light); }
+@media (max-width: 760px) {
+  .join-form-card { grid-column: 1; grid-row: 3; }
+}
