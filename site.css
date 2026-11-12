@@ -55,8 +55,8 @@ img { display: block; max-width: 100%; }
 .site-header { border-bottom: 1px solid #2a1e31; background: #110d16; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 74px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; min-width: max-content; }
-.brand-mark { display: grid; place-items: start center; width: 44px; height: 44px; padding-top: 4px; overflow: hidden; border-radius: 12px; background: var(--ink); }
-.brand-logo { width: 35px; height: auto; mix-blend-mode: screen; clip-path: inset(0 0 38%); }
+.brand-mark { display: grid; place-items: center; width: 44px; height: 58px; }
+.brand-logo { width: 38px; height: 56px; object-fit: contain; mix-blend-mode: screen; }
 .brand-name { font-size: 1.35rem; font-stretch: 82%; font-weight: 820; letter-spacing: -.035em; }
 .brand-name em { color: var(--muted); font-style: normal; font-weight: 450; }
 .main-nav, .header-actions, .account { display: flex; align-items: center; gap: clamp(10px, 1.9vw, 26px); }
