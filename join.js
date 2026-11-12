@@ -20,7 +20,9 @@
   const PLACEHOLDER = { telegram: '@твой_ник', vk: 'vk.com/твоя_страница', phone: '+7 900 123-45-67' };
   const LABEL = { telegram: 'Твой ник в Telegram', vk: 'Ссылка на твою страницу ВК', phone: 'Твой номер телефона' };
   const CHANNEL = { telegram: 'в Telegram', vk: 'во ВКонтакте', phone: 'по телефону' };
-  let page = null, seats = null, known = null, kind = 'telegram', done = null;
+  let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '';
+  // The evening the person looks at: the one picked in the list, otherwise the nearest.
+  const current = () => { const list = (page && page.evenings) || []; return list.find((e) => e.id === chosen) || (page && page.evening) || list[0] || null; };
 
   const visitor = () => {
     try {
@@ -38,7 +40,7 @@
   }).join('');
 
   const form = () => done
-    ? '<div class="join-done" data-testid="join-done"><strong>Спасибо!</strong><p>Мы напишем тебе ' + CHANNEL[done] + ' в течение дня.</p></div>'
+    ? '<div class="join-done" data-testid="join-done"><strong>Записали' + (doneDay ? ': ' + esc(doneDay) : '') + '</strong><p>Мы напишем тебе ' + CHANNEL[done] + ' в течение дня и подтвердим место. Ответь нам, если планы поменяются.</p></div>'
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
@@ -51,7 +53,7 @@
   let news = '';
   // The seats are redrawn on their own, so a person typing in the form is never interrupted.
   const renderBoard = (fresh) => {
-    const ev = page && page.evening;
+    const ev = current();
     const slot = document.getElementById('join-board-slot');
     const sticky = document.getElementById('join-sticky');
     if (slot) slot.innerHTML = ev && seats && seats.games.length
@@ -62,12 +64,13 @@
       else { sticky.classList.remove('is-on'); document.body.classList.remove('has-sticky'); }
     }
   };
+  const picker = (ev) => { const list = page.evenings || []; return list.length > 1 ? '<div class="join-days" role="radiogroup" aria-label="Выбери пятницу">' + list.map((e) => '<button type="button" role="radio" data-evening="' + esc(e.id) + '" aria-checked="' + (ev && ev.id === e.id) + '">' + esc(day(e.starts_at)) + '</button>').join('') + '</div>' : ''; };
   const render = () => {
-    const ev = page && page.evening;
+    const ev = current();
     if (!page) { root.innerHTML = '<p class="join-empty">Загружаем ближайшее обучение…</p>'; return; }
     root.innerHTML =
       '<div class="join-layout"><div class="join-head">' +
-        '<p class="eyebrow">Ближайшее обучение</p><h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
+        '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Выбери пятницу' : 'Ближайшее обучение') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
         (ev ? '<p class="join-when" data-testid="join-countdown">через ' + left(ev.starts_at) + '</p>' +
           '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(ev.price) + '</strong></li></ul>'
           : '<p class="join-sub" style="margin-top:22px">Дата ближайшего обучения пока не объявлена. Оставь контакт, и мы напишем, когда она появится.</p>') +
@@ -78,6 +81,7 @@
   };
 
   const bind = () => {
+    document.querySelectorAll('[data-evening]').forEach((b) => b.addEventListener('click', () => { chosen = b.dataset.evening; seats = null; known = null; render(); loadSeats(); }));
     const f = document.getElementById('join-form');
     if (!f) return;
     const name = document.getElementById('join-name'), contact = document.getElementById('join-contact'), send = document.getElementById('join-send');
@@ -89,17 +93,18 @@
       e.preventDefault(); if (send.disabled) return;
       send.disabled = true; document.getElementById('join-error').textContent = '';
       try {
-        const r = await fetch(API + '/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.value, contact_kind: kind, contact_value: contact.value, source, referred_by: document.getElementById('join-friend').value, website: document.getElementById('join-trap').value }) });
+        const r = await fetch(API + '/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.value, contact_kind: kind, contact_value: contact.value, source, evening_id: (current() || {}).id || '', referred_by: document.getElementById('join-friend').value, website: document.getElementById('join-trap').value }) });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body.error || 'Не удалось отправить. Попробуй ещё раз или напиши нам в Telegram.');
-        done = kind; render();
+        done = kind; doneDay = current() ? day(current().starts_at) : ''; render();
       } catch (err) { document.getElementById('join-error').textContent = err.message || 'Не удалось отправить'; check(); }
     });
   };
 
   const loadSeats = async () => {
     try {
-      const r = await fetch(API + '/seats', { cache: 'no-store' });
+      const cur = current();
+      const r = await fetch(API + '/seats' + (cur ? '?evening=' + encodeURIComponent(cur.id) : ''), { cache: 'no-store' });
       if (!r.ok) return;
       const next = await r.json();
       const names = new Set((next.games || []).flatMap((g) => g.people));
@@ -113,5 +118,5 @@
   fetch(API, { cache: 'no-store' }).then((r) => r.ok ? r.json() : Promise.reject(new Error('load'))).then((data) => { page = data; render(); loadSeats(); })
     .catch(() => { root.innerHTML = '<p class="join-empty">Не получилось загрузить ближайшее обучение. Запишись в <a href="' + TELEGRAM + '" style="color:var(--blue)">Telegram</a>.</p>'; });
   fetch(API + '/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitor_id: visitor(), source }) }).catch(() => {});
-  setInterval(() => { if (document.visibilityState !== 'hidden') loadSeats(); const c = document.querySelector('[data-testid="join-countdown"]'); if (c && page && page.evening) c.textContent = 'через ' + left(page.evening.starts_at); }, POLL_MS);
+  setInterval(() => { if (document.visibilityState !== 'hidden') loadSeats(); const c = document.querySelector('[data-testid="join-countdown"]'); if (c && current()) c.textContent = 'через ' + left(current().starts_at); }, POLL_MS);
 })();
