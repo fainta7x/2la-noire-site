@@ -15,6 +15,8 @@
     text('.rating-copy > p:not(.eyebrow)', s.rating);
     text('.place-text', s.place);
     link('a[href^="https://t.me/mafiatulasport"]', s.telegram_url);
+    link('#hub-vk', s.vk_url);
+    (d.contacts || []).forEach((c) => { if (c.label === 'Telegram') link('#hub-write', c.url); });
     if (typeof s.benefits === 'string' && s.benefits.trim()) {
       const cards = s.benefits.split(/\n\s*\n/).map((b) => b.trim().split('\n')).filter((l) => l.length > 1);
       const grid = document.getElementById('benefit-grid');
