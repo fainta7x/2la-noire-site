@@ -96,7 +96,7 @@
         const r = await fetch(API + '/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.value, contact_kind: kind, contact_value: contact.value, source, evening_id: (current() || {}).id || '', referred_by: document.getElementById('join-friend').value, website: document.getElementById('join-trap').value }) });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body.error || 'Не удалось отправить. Попробуй ещё раз или напиши нам в Telegram.');
-        done = kind; doneDay = current() ? day(current().starts_at) : ''; render();
+        if (window.goal) window.goal('lead_sent'); done = kind; doneDay = current() ? day(current().starts_at) : ''; render();
       } catch (err) { document.getElementById('join-error').textContent = err.message || 'Не удалось отправить'; check(); }
     });
   };
