@@ -5,14 +5,23 @@
   const api = app + '/api/public/welcome';
   const read = async (path = '', options = {}) => {
     const response = await fetch(api + path, { cache: 'no-store', ...options });
-    if (!response.ok) throw new Error('Не удалось загрузить данные клуба');
+    if (!response.ok) {
+      const error = new Error('Не удалось загрузить данные клуба');
+      error.status = response.status;
+      throw error;
+    }
     return response.json();
   };
+  const loadInfo = () => read().catch(async (error) => {
+    if (error.status && error.status < 500) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    return read();
+  });
   window.club = {
     app,
     api,
     read,
-    info: read().catch(() => null),
+    info: loadInfo().catch(() => null),
     organizer: 'https://t.me/Chagina7x',
     telegram: 'https://t.me/mafiatulasport',
     safeLink(value, origin) {
