@@ -10,7 +10,7 @@ PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index
 STYLES = ('site.css', 'join.css', 'pages.css')
 SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js', 'home.js')
 LEGACY = (*STYLES, 'welcome.js', 'join.js', 'cms.js', 'account.js')
-PUBLIC = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg')
+PUBLIC = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg', 'yandex_c46be070f2d80f16.html')
 
 STYLESHEET = re.compile(r'<link rel="stylesheet" href="/([\w.-]+\.css)">')
 DEFERRED = re.compile(r'[ \t]*<script src="/([\w.-]+\.js)" defer></script>\n?')
