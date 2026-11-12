@@ -15,6 +15,11 @@
     text('.rating-copy > p:not(.eyebrow)', s.rating);
     text('.place-text', s.place);
     link('a[href^="https://t.me/mafiatulasport"]', s.telegram_url);
+    if (typeof s.benefits === 'string' && s.benefits.trim()) {
+      const cards = s.benefits.split(/\n\s*\n/).map((b) => b.trim().split('\n')).filter((l) => l.length > 1);
+      const grid = document.getElementById('benefit-grid');
+      if (grid && cards.length) grid.innerHTML = cards.map((l, i) => '<article><span>' + String(i + 1).padStart(2, '0') + '</span><h3>' + esc(l[0]) + '</h3><p>' + esc(l.slice(1).join(' ')) + '</p></article>').join('');
+    }
     if (typeof s.faq === 'string' && s.faq.trim()) {
       const items = s.faq.split(/\n\s*\n/).map((b) => b.trim().split('\n')).filter((l) => l.length > 1);
       const list = document.querySelector('.faq-list');
