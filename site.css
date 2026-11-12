@@ -210,11 +210,11 @@ footer { border-top: 1px solid var(--line); }
 .footer-inner nav { display: flex; flex-wrap: wrap; gap: 12px 24px; }
 .footer-inner p { color: var(--muted); margin: 0; }
 
-@media (min-width: 1081px) {
+@media (min-width: 1241px) {
   .site-header { position: sticky; top: 0; z-index: 10; background: #110d16ed; backdrop-filter: blur(10px); }
   :target { scroll-margin-top: 94px; }
 }
-@media (max-width: 1080px) {
+@media (max-width: 1240px) {
   .header-inner { flex-wrap: wrap; gap: 0 12px; padding-block: 10px 4px; }
   .header-inner .main-nav { order: 3; width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 0 18px; }
   .header-inner .main-nav a { display: inline-flex; align-items: center; min-height: 44px; }
@@ -319,3 +319,11 @@ footer { border-top: 1px solid var(--line); }
   .hero-layout { min-height: 440px; }
   .first-visit-photo img { border-radius: 8px; }
 }
+
+.club-section { background: radial-gradient(ellipse at 12% 8%, #3c2858, transparent 65%), var(--ink); }
+.club-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.club-grid article { padding: clamp(16px, 3vw, 28px); border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
+.club-grid h2, .club-grid h3 { font-size: clamp(1.18rem, 2.2vw, 1.65rem); margin: 0; line-height: 1.18; }
+.club-grid p { color: var(--muted); }
+.club-event-photo { width: 100%; height: auto; border-radius: 12px; margin-top: 12px; }
+@media (max-width: 760px) { .club-grid { grid-template-columns: minmax(0, 1fr); } }
