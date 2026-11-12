@@ -46,10 +46,10 @@
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
-      '<label>Тебя кто-то пригласил? Напиши, кто<input type="text" id="join-friend" maxlength="60" value="' + esc(params.get('ref') || '') + '"></label>' +
+      '<details class="join-ref"' + (params.get('ref') ? ' open' : '') + '><summary>Тебя пригласил друг?</summary><label>Как его зовут<input type="text" id="join-friend" maxlength="60" value="' + esc(params.get('ref') || '') + '"></label></details>' +
       '<input class="join-trap" type="text" id="join-trap" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<p class="join-error" id="join-error" role="alert"></p>' +
-      '<button class="primary-button" id="join-send" type="submit" disabled><span>Отправить заявку</span><span class="button-arrow">→</span></button></form>';
+      '<button class="primary-button" id="join-send" type="submit" disabled><span>Записаться</span><span class="button-arrow">→</span></button></form>';
 
   let formDraft = { name: '', contact: '' };
   let news = '';
@@ -72,13 +72,13 @@
     if (!page) { root.innerHTML = '<p class="join-empty">Загружаем ближайшее обучение…</p>'; return; }
     root.innerHTML =
       '<div class="join-layout"><div class="join-head">' +
-        '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Выбери пятницу' : 'Ближайшее обучение') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
+        '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Когда придёшь?' : 'Ближайшая игра') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
         (ev ? '<p class="join-when" data-testid="join-countdown">через ' + left(ev.starts_at) + '</p>' +
           '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
           : '<p class="join-sub" style="margin-top:22px">Дата ближайшего обучения пока не объявлена. Оставь контакт, и мы напишем, когда она появится.</p>') +
-      '</div><div><div id="join-board-slot"></div>' +
-        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Хочешь прийти?') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт, и место закрепится за тобой.</p>') + form() +
-        '<p class="join-alt">Или запишись сам: <a href="' + (ev && ev.telegram_url ? esc(ev.telegram_url) : TELEGRAM) + '">Telegram</a>' + (ev ? ' · <a href="' + esc(ev.join_url) + '">ВКонтакте</a>' : '') + '</p></div></div></div>';
+      '</div><div>' +
+        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Записаться на игру') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт, и место закрепится за тобой.</p>') + form() +
+        '</div><div id="join-board-slot" class="join-board-gap"></div></div></div>';
     renderBoard(); bind();
   };
 

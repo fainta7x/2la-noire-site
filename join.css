@@ -64,3 +64,19 @@
 
 .join-days{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}.join-days button{background:transparent;border:1px solid #2a3a52;border-radius:999px;color:#c9d4e2;cursor:pointer;font:inherit;font-size:.9rem;padding:10px 16px}.join-days button[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:#fff}
 .schedule-glow{pointer-events:none}.schedule .section-inner{position:relative;z-index:1}
+
+/* v2 формы записи */
+.join-form-card{background:#0f1a2b;border:1px solid #223149;border-radius:20px;padding:28px}
+.join-form-card h3{font-size:1.5rem;margin:0 0 6px}
+.join-sub{color:#a9b6c6;line-height:1.55;margin:0 0 20px}
+.join-form{display:grid;gap:16px}
+.join-form label{color:#c9d4e2;display:grid;font-size:.9rem;gap:8px}
+.join-form input{background:#0a1220;border:1px solid #2a3a52;border-radius:12px;color:#f4f7fb;font:inherit;font-size:1.05rem;min-height:54px;padding:0 16px}
+.join-form input:focus{border-color:var(--accent);outline:none}
+.join-kinds{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.join-kinds button{border-radius:12px;font-size:.95rem;min-height:48px}
+.join-ref summary{color:#8fa0b4;cursor:pointer;font-size:.9rem;margin-bottom:10px}
+.join-form .primary-button{justify-content:center;min-height:58px;width:100%;font-size:1.1rem}
+.join-form .primary-button:disabled{cursor:not-allowed;opacity:.4;box-shadow:none}
+.join-form .primary-button:disabled{background:#26324a;color:#8fa0b4;opacity:1}
+.join-ref{border:0;padding:0;margin:0}.join-ref summary{padding:0;list-style:none}.join-ref summary::-webkit-details-marker{display:none}.join-ref[open] label{margin-top:4px}
