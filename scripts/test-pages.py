@@ -99,15 +99,19 @@ class SiteHandler(SimpleHTTPRequestHandler):
             self.send_json({'ok': True})
 
 
-def check_layout(page, origin, width, height):
+def check_layout(page, origin, width, height, snapshots=None):
     page.set_viewport_size({'width': width, 'height': height})
     page.goto(origin, wait_until='domcontentloaded')
     expect(page.get_by_role('heading', name='Спортивная мафия в Туле')).to_be_visible()
     expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
     expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
     expect(page.get_by_role('link', name='Выбрать пятницу')).to_be_in_viewport()
-    expect(page.locator('.table-team-red .team-markers i')).to_have_count(7)
-    expect(page.locator('.table-team-black .team-markers i')).to_have_count(3)
+    cover = page.get_by_role('img', name='Игроки в масках за столом 2LA noire')
+    expect(cover).to_be_visible()
+    assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
+    expect(page.locator('.photo-grid .photo')).to_have_count(3)
+    if snapshots and width in (390, 1024, 1891):
+        page.screenshot(path=snapshots / f'home-{width}.jpg', type='jpeg', quality=84, animations='disabled')
     layout = page.evaluate("""() => {
         const rect = (s) => document.querySelector(s).getBoundingClientRect().toJSON();
         const range = document.createRange();
@@ -132,6 +136,24 @@ def check_layout(page, origin, width, height):
     expect(page.get_by_role('heading', name='Правила спортивной мафии', exact=True)).to_be_visible()
     assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Rules horizontal overflow at {width}'
     expect(page.get_by_role('link', name='Выбрать пятницу')).to_have_attribute('href', '/#join')
+    if snapshots and width in (390, 1891):
+        page.screenshot(path=snapshots / f'rules-{width}.jpg', type='jpeg', quality=84, animations='disabled')
+
+
+def check_gallery(page, origin):
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(origin, wait_until='domcontentloaded')
+    page.get_by_role('link', name='Фото', exact=True).click()
+    first = page.get_by_role('link', name='Игроки слушают речь за столом')
+    first.click()
+    dialog = page.get_by_role('dialog')
+    expect(dialog).to_be_visible()
+    expect(dialog.locator('figcaption')).to_contain_text('1 из 3')
+    page.keyboard.press('ArrowRight')
+    expect(dialog.locator('figcaption')).to_contain_text('2 из 3')
+    page.keyboard.press('Escape')
+    expect(dialog).to_be_hidden()
+    expect(first).to_be_focused()
 
 
 def check_form(page, origin, server):
@@ -156,7 +178,7 @@ def check_form(page, origin, server):
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
 
 
-def check_browser(browser_type, origin, server):
+def check_browser(browser_type, origin, server, snapshots=None):
     with browser_type.launch() as browser:
         context = browser.new_context(viewport={'width': 1891, 'height': 933}, reduced_motion='reduce')
         context.add_init_script(INIT)
@@ -165,7 +187,8 @@ def check_browser(browser_type, origin, server):
         page.on('pageerror', lambda error: errors.append(str(error)))
 
         before = server.legacy_requests.copy()
-        check_layout(page, origin, 1891, 933)
+        for width, height in VIEWPORTS:
+            check_layout(page, origin, width, height)
         assert before == server.legacy_requests, 'Fresh visitor fetched an unversioned CSS or JS file'
 
         page.goto(origin + '_test/previous/')
@@ -175,16 +198,18 @@ def check_browser(browser_type, origin, server):
         before = server.legacy_requests.copy()
 
         for width, height in VIEWPORTS:
-            check_layout(page, origin, width, height)
+            check_layout(page, origin, width, height, snapshots)
+        check_gallery(page, origin)
         check_form(page, origin, server)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'
         assert not errors, errors
-    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes, home and rules, fresh and old cache, sign-up, rating', flush=True)
+    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes, home and rules, fresh and old cache, gallery, sign-up, rating', flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('site', type=Path)
+    parser.add_argument('--snapshots', type=Path)
     args = parser.parse_args()
     with ThreadingHTTPServer(('127.0.0.1', 0), partial(SiteHandler, directory=args.site)) as server:
         server.legacy_requests = Counter()
@@ -194,8 +219,10 @@ def main():
         try:
             with sync_playwright() as playwright:
                 origin = f'http://127.0.0.1:{server.server_port}/'
+                if args.snapshots:
+                    args.snapshots.mkdir(parents=True, exist_ok=True)
                 for name in ('chromium', 'firefox', 'webkit'):
-                    check_browser(getattr(playwright, name), origin, server)
+                    check_browser(getattr(playwright, name), origin, server, args.snapshots if name == 'chromium' else None)
         finally:
             server.shutdown()
             thread.join()

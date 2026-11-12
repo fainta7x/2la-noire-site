@@ -28,7 +28,15 @@ jobs:
           pip install playwright==1.56.0
           python -m playwright install --with-deps chromium firefox webkit
       - name: Check published HTML in three browsers
-        run: python scripts/test-pages.py _site
+        run: python scripts/test-pages.py _site --snapshots _screens
+      - name: Store viewport screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-screens
+          path: _screens
+          if-no-files-found: ignore
+          retention-days: 7
 
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

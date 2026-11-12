@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ('index.html', 'pravila/index.html')
 STYLES = ('site.css', 'join.css', 'pages.css')
-SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js')
+SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js')
 LEGACY = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg', *STYLES, *SCRIPTS)
 
 STYLESHEET = re.compile(r'<link rel="stylesheet" href="/([\w.-]+\.css)">')

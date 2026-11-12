@@ -68,24 +68,26 @@
     }
 
     const gallery = document.getElementById('place-photos');
-    const photos = (Array.isArray(data.hero_photos) ? data.hero_photos : [])
-      .filter((path) => typeof path === 'string' && path.startsWith('/'))
-      .map((path) => safeLink(path, app)).filter(Boolean).slice(0, 4);
-    if (photos.length) {
-      gallery.replaceChildren(...photos.map((url) => {
+    const alreadyShown = new Set(Array.from(gallery.children, (item) => item.dataset.original));
+    alreadyShown.add(gallery.dataset.coverOriginal);
+    const photos = Array.isArray(data.hero_photos) ? data.hero_photos : [];
+    photos.filter((path) => typeof path === 'string' && path.startsWith('/') && !alreadyShown.has(path))
+      .slice(0, 3).forEach((path) => {
+        const url = safeLink(path, app);
+        if (!url) return;
+        const link = make('a');
+        link.className = 'photo photo-extra';
+        link.href = url;
+        link.dataset.original = path;
         const image = make('img');
+        image.alt = 'Игровой вечер 2LA noire';
         image.loading = 'lazy';
         image.decoding = 'async';
-        image.alt = 'Фото из галереи клуба 2LA noire';
-        image.addEventListener('error', () => {
-          image.remove();
-          if (!gallery.childElementCount) gallery.hidden = true;
-        }, { once: true });
+        image.addEventListener('error', () => link.remove(), { once: true });
+        link.append(image);
         image.src = url;
-        return image;
-      }));
-      gallery.hidden = false;
-    }
+        gallery.append(link);
+      });
   }).catch(() => {});
 
   const board = document.getElementById('rating-board');
