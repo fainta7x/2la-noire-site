@@ -165,6 +165,11 @@ def check_layout(page, origin, width, height, snapshots=None):
         copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
         photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
         assert abs(copy_center - photo_center) <= 1, f'Hero misaligned at {width}: {layout}'
+        if snapshots and width in (390, 1891):
+            gallery = page.locator('.home-gallery')
+            gallery.scroll_into_view_if_needed()
+            gallery.locator('img').evaluate_all('(images) => Promise.all(images.map((img) => img.decode()))')
+            gallery.screenshot(path=snapshots / f'home-photos-{width}.jpg', type='jpeg', quality=84)
 
 
 def check_cover_photos(page, origin):
