@@ -130,12 +130,12 @@
         boardLabel.textContent = 'Места за столом';
         board.open = true;
         games.innerHTML = entries.map((game) => {
-          const target = Math.max(0, Math.trunc(Number(game.target) || 0));
+          const target = 10;
           const taken = Math.max(0, Math.trunc(Number(game.taken) || 0));
           const free = Math.max(0, target - taken);
           const meter = target ? '<progress class="join-capacity" aria-label="Занято мест" max="' + target + '" value="' + Math.min(taken, target) + '"></progress>' : '';
           return '<article class="join-game"><h4>Игра ' + escape(game.number) + ' · ' + escape(timeFormat.format(new Date(game.starts_at))) +
-            '</h4><p>Занято: <strong>' + taken + ' из ' + target + '</strong></p>' + meter +
+            '</h4><p>Занято: <strong>' + taken + ' из ' + target + '</strong></p><p>Для старта нужно 8 игроков.</p>' + meter +
             '<p>' + (free ? 'Свободно мест: ' + free : 'Свободных мест нет') + '</p>' +
             (game.people?.length ? '<p>' + game.people.map(escape).join(', ') + '</p>' : '') + '</article>';
         }).join('');
