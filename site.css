@@ -303,3 +303,19 @@ footer { border-top: 1px solid var(--line); }
   background: var(--ink-raised);
 }
 .footer-inner nav a:hover { border-color: var(--violet-light); }
+
+.hero-layout { position: relative; isolation: isolate; min-height: clamp(490px, 58vw, 700px); align-content: center; }
+.hero-copy { z-index: 1; padding: 38px 12px 88px; pointer-events: none; }
+.hero-copy a { pointer-events: auto; }
+.hero-visual { position: absolute; inset: 0 var(--gutter); display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+.hero-slide { position: relative; }
+.hero-slide::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#100d1578, #100d15c9); }
+.hero-slide img { width: 100%; height: 100%; object-position: center 57%; }
+.hero-photo-bar { position: relative; }
+.hero-lead { color: var(--text); }
+.first-visit-photo { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(6px, 2vw, 20px); background: none; }
+.first-visit-photo img { width: 100%; max-height: none; }
+@media (max-width: 480px) {
+  .hero-layout { min-height: 440px; }
+  .first-visit-photo img { border-radius: 8px; }
+}

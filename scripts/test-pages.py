@@ -161,7 +161,7 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert not layout['old'] and 'hero-table' not in layout['background']
         assert layout['title']['left'] >= layout['hero']['left'] - 1, f'Headline overflow at {width}: {layout}'
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
-        assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
+        assert layout['hero']['top'] >= layout['figure']['top'] and layout['hero']['bottom'] <= layout['figure']['bottom'], f'Hero copy outside photo at {width}'
         copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
         photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
         assert abs(copy_center - photo_center) <= 1, f'Hero misaligned at {width}: {layout}'
