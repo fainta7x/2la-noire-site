@@ -21,3 +21,16 @@
   count.textContent = '1 / ' + slides.length;
   controls.hidden = false;
 })();
+
+(() => {
+  const table = document.querySelector('.table-art');
+  if (!table || !('IntersectionObserver' in window) ||
+      !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+
+  const observer = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) return;
+    table.classList.add('is-playing');
+    observer.disconnect();
+  }, { threshold: 0.4 });
+  observer.observe(table);
+})();
