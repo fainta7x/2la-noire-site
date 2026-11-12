@@ -10,11 +10,17 @@
     text('.hero-lead', s.hero_lead);
     text('.hero-note span:last-child', s.schedule_line);
     text('#about .about-text', s.about);
-    text('#newcomers .section-heading > p:last-child', s.newcomers);
+    text('#rules-text', s.rules);
+    text('.evening-lead', s.newcomers);
+    if (typeof s.evening === 'string' && s.evening.trim()) {
+      const items = s.evening.split(/\n\s*\n/).map((b) => b.trim().split('\n')).filter((l) => l.length > 1);
+      const list = document.getElementById('evening-steps');
+      if (list && items.length) list.innerHTML = items.map((l) => '<li><span>' + esc(l[0]) + '</span><div><p>' + esc(l.slice(1).join(' ')) + '</p></div></li>').join('');
+    }
     if (typeof s.audience === 'string' && s.audience.trim()) {
-      const cards = s.audience.split(/\n\s*\n/).map((b) => b.trim().split('\n')).filter((l) => l.length > 1);
+      const lines = s.audience.split('\n').map((x) => x.trim()).filter(Boolean);
       const grid = document.getElementById('audience-grid');
-      if (grid && cards.length) grid.innerHTML = cards.map((l) => '<article><h3>' + esc(l[0]) + '</h3><p>' + esc(l.slice(1).join(' ')) + '</p></article>').join('');
+      if (grid && lines.length) grid.innerHTML = lines.map((t) => '<article><h3>' + esc(t) + '</h3></article>').join('');
     }
     text('.rating-text', s.rating);
     text('.place-text', s.place);
