@@ -61,7 +61,7 @@
             '<label class="join-field"><span id="join-contact-label"></span><input id="join-contact" required maxlength="120" autocapitalize="none" spellcheck="false"></label>' +
             '<label class="join-field">Кто пригласил? (необязательно)<input type="text" id="join-friend" maxlength="60" value="' + escape(params.get('ref') || '') + '"></label>' +
             '<input class="join-trap" type="text" id="join-trap" tabindex="-1" autocomplete="off" aria-hidden="true">' +
-            '<p class="join-note">Контакт нужен для связи по этой записи.</p>' +
+            '<p class="join-note">Контакт нужен для связи по этой записи. Нажимая кнопку, ты соглашаешься с <a href="/privacy/">обработкой персональных данных</a>.</p>' +
             '<p class="join-error" id="join-error" role="alert"></p>' +
             '<button class="primary-button" type="submit">' + (selected ? 'Записаться на игру' : 'Сообщить мне о дате') + '</button>' +
           '</form>' +
