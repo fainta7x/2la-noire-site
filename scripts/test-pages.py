@@ -145,7 +145,7 @@ def check_layout(page, origin, width, height, snapshots=None):
             continue
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
-        cover = page.get_by_role('img', name='Красный микрофон и табличка места № 2')
+        cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
         layout = page.evaluate("""() => {
@@ -159,27 +159,25 @@ def check_layout(page, origin, width, height, snapshots=None):
             };
         }""")
         assert not layout['old'] and 'hero-table' not in layout['background']
+        assert layout['title']['left'] >= layout['hero']['left'] - 1, f'Headline overflow at {width}: {layout}'
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
-        if width > 760:
-            assert layout['hero']['right'] < layout['figure']['left'], f'Hero overlap at {width}'
-            copy_center = (layout['hero']['top'] + layout['hero']['bottom']) / 2
-            photo_center = (layout['figure']['top'] + layout['figure']['bottom']) / 2
-            assert abs(copy_center - photo_center) <= 1, f'Hero columns unaligned at {width}'
-        else:
-            assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
+        assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
+        copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
+        photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
+        assert abs(copy_center - photo_center) <= 1, f'Hero misaligned at {width}: {layout}'
 
 
 def check_cover_photos(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin, wait_until='domcontentloaded')
-    photos = page.get_by_role('region', name='Иллюстрация и фотографии клуба')
+    photos = page.get_by_role('region', name='Фотографии клуба')
     count = photos.locator('.hero-photo-count')
     next_photo = photos.get_by_role('button', name='Следующий кадр')
     expect(count).to_have_text('1 / 4')
     next_photo.focus()
     page.keyboard.press('Enter')
     expect(count).to_have_text('2 / 4')
-    expect(photos.get_by_role('img', name='Игроки в масках за столом 2LA noire')).to_be_visible()
+    expect(photos.get_by_role('img', name='Игроки слушают речь за столом')).to_be_visible()
     expect(next_photo).to_be_focused()
     photos.get_by_role('button', name='Предыдущий кадр').click()
     photos.get_by_role('button', name='Предыдущий кадр').click()
