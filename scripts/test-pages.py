@@ -145,7 +145,7 @@ def check_layout(page, origin, width, height, snapshots=None):
             continue
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
-        cover = page.get_by_role('img', name='Иллюстрация дневной фазы: игроки обсуждают, кого подозревают')
+        cover = page.get_by_role('img', name='Красный микрофон и табличка места № 2')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
         layout = page.evaluate("""() => {
@@ -186,17 +186,6 @@ def check_cover_photos(page, origin):
     expect(count).to_have_text('4 / 4')
     expect(photos.locator('.hero-slide:visible')).to_have_count(1)
     assert photos.locator('.hero-slide:visible img').evaluate('(img) => getComputedStyle(img).animationName') == 'none'
-
-
-def check_night_illustration(page, origin, snapshots=None):
-    for width, height in ((390, 844), (1891, 933)):
-        page.set_viewport_size({'width': width, 'height': height})
-        page.goto(origin + '#about', wait_until='domcontentloaded')
-        art = page.get_by_role('img', name='Иллюстрация ночной фазы: двое игроков в чёрных масках')
-        art.scroll_into_view_if_needed()
-        assert art.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
-        if snapshots:
-            art.screenshot(path=snapshots / f'night-illustration-{width}.jpg', type='jpeg', quality=88)
 
 
 def check_gallery(page, origin):
@@ -259,7 +248,6 @@ def check_browser(browser_type, origin, server, snapshots=None):
 
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
-        check_night_illustration(page, origin, snapshots)
         check_cover_photos(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)

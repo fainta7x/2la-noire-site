@@ -124,7 +124,6 @@ img { display: block; max-width: 100%; }
 .benefit-grid { margin-top: 22px; display: grid; gap: 14px; }
 .benefit-grid article { border-top: 1px solid var(--line); padding-top: 14px; }
 .benefit-grid h4 { margin: 0 0 4px; }
-.night-illustration { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 22px; border-radius: 12px; }
 .game-stages { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
 .game-stages li { position: relative; display: grid; gap: 2px; padding: 10px 0 10px 18px; border-left: 1px solid var(--line); }
 .game-stages li::before { content: ""; position: absolute; inset: 17px auto auto -4px; width: 7px; height: 7px; border-radius: 50%; background: var(--link); }
