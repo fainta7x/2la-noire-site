@@ -22,7 +22,7 @@
   const PLACEHOLDER = { telegram: '@твой_ник', vk: 'vk.com/твоя_страница', phone: '+7 (900) 123-45-67' };
   const LABEL = { telegram: 'Твой ник в Telegram', vk: 'Ссылка на твою страницу ВК', phone: 'Твой номер телефона' };
   const CHANNEL = { telegram: 'Напишем тебе в Telegram', vk: 'Напишем тебе во ВКонтакте', phone: 'Позвоним или напишем тебе на этот номер' };
-  let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '', doneBooked = false;
+  let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '', doneBooked = false, doneKept = false;
   // The evening the person looks at: the one picked in the list, otherwise the nearest.
   const current = () => { const list = (page && page.evenings) || []; return list.find((e) => e.id === chosen) || (page && page.evening) || list[0] || null; };
 
@@ -42,7 +42,7 @@
   }).join('');
 
   const form = () => done
-    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneBooked ? 'Место за тобой' : 'Заявку приняли') + (doneDay ? ': ' + esc(doneDay) : '') + '</strong><p>' + CHANNEL[done] + ' в течение дня и подтвердим. Если планы поменяются, просто ответь нам.</p></div>'
+    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Место за тобой' : 'Заявку приняли') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если планы поменяются, просто ответь нам.') + '</p></div>'
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
@@ -99,7 +99,7 @@
         const r = await fetch(API + '/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.value, contact_kind: kind, contact_value: contact.value, source, evening_id: (current() || {}).id || '', referred_by: document.getElementById('join-friend').value, website: document.getElementById('join-trap').value }) });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body.error || 'Не удалось отправить. Попробуй ещё раз или напиши нам в Telegram.');
-        if (window.goal) window.goal('lead_sent'); done = kind; doneBooked = body.booked === true; doneDay = current() ? day(current().starts_at) : ''; render(); loadSeats();
+        if (window.goal) window.goal('lead_sent'); done = kind; doneBooked = body.booked === true; doneKept = body.already_booked === true && body.booked !== true; doneDay = current() ? day(current().starts_at) : ''; render(); loadSeats();
       } catch (err) { document.getElementById('join-error').textContent = err.message || 'Не удалось отправить'; check(); }
     });
   };
