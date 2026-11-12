@@ -14,9 +14,17 @@ from playwright.sync_api import expect, sync_playwright
 VIEWPORTS = [
     (320, 568), (340, 640), (341, 640), (375, 667), (390, 844),
     (440, 812), (441, 812), (720, 900), (721, 900), (760, 900),
-    (761, 900), (900, 900), (901, 900), (1024, 768), (1440, 900),
+    (761, 900), (900, 900), (901, 900), (1024, 768), (1080, 900), (1081, 900), (1440, 900),
     (1891, 933), (1920, 1080), (2560, 1440),
 ]
+PAGES = {
+    '': 'Спортивная мафия в Туле',
+    'igry/': 'Расписание и запись',
+    'novichkam/': 'Твой первый вечер',
+    'pravila/': 'Правила спортивной мафии',
+    'foto/': 'Фото с игровых вечеров',
+    'rating/': 'Клубный рейтинг',
+}
 LEGACY = {
     '/site.css': 'body { --old-site: yes; }',
     '/join.css': 'body { --old-join: yes; }',
@@ -101,43 +109,43 @@ class SiteHandler(SimpleHTTPRequestHandler):
 
 def check_layout(page, origin, width, height, snapshots=None):
     page.set_viewport_size({'width': width, 'height': height})
-    page.goto(origin, wait_until='domcontentloaded')
-    expect(page.get_by_role('heading', name='Спортивная мафия в Туле')).to_be_visible()
-    expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
-    expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
-    expect(page.get_by_role('link', name='Выбрать пятницу')).to_be_in_viewport()
-    cover = page.get_by_role('img', name='Игроки в масках за столом 2LA noire')
-    expect(cover).to_be_visible()
-    assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
-    expect(page.locator('.photo-grid .photo')).to_have_count(3)
-    if snapshots and width in (390, 1024, 1891):
-        page.screenshot(path=snapshots / f'home-{width}.jpg', type='jpeg', quality=84, animations='disabled')
-    layout = page.evaluate("""() => {
-        const rect = (s) => document.querySelector(s).getBoundingClientRect().toJSON();
-        const range = document.createRange();
-        range.selectNodeContents(document.querySelector('.hero h1'));
-        return {
-          viewport: innerWidth, scroll: document.documentElement.scrollWidth,
-          hero: rect('.hero-copy'), figure: rect('.hero-visual'), title: range.getBoundingClientRect().toJSON(),
-          skip: rect('.skip-link'), background: getComputedStyle(document.querySelector('.hero-visual')).backgroundImage,
-          old: getComputedStyle(document.body).getPropertyValue('--old-site')
-        };
-    }""")
-    assert layout['scroll'] <= width + 1, f'Home horizontal overflow at {width}: {layout}'
-    assert layout['skip']['bottom'] < 0, f'Skip link visible without focus at {width}'
-    assert not layout['old'] and 'hero-table' not in layout['background']
-    assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
-    if width > 760:
-        assert layout['hero']['right'] < layout['figure']['left'], f'Hero overlap at {width}'
-    else:
-        assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
-
-    page.get_by_role('link', name='Правила', exact=True).click()
-    expect(page.get_by_role('heading', name='Правила спортивной мафии', exact=True)).to_be_visible()
-    assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Rules horizontal overflow at {width}'
-    expect(page.get_by_role('link', name='Выбрать пятницу')).to_have_attribute('href', '/#join')
-    if snapshots and width in (390, 1891):
-        page.screenshot(path=snapshots / f'rules-{width}.jpg', type='jpeg', quality=84, animations='disabled')
+    for route, title in PAGES.items():
+        response = page.goto(origin + route, wait_until='domcontentloaded')
+        assert response.ok, f'{route} returned {response.status}'
+        expect(page.get_by_role('heading', level=1, name=title, exact=True)).to_be_visible()
+        expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
+        assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
+        assert page.locator('.skip-link').bounding_box()['y'] < 0, f'Skip link visible at /{route}, {width}'
+        if route:
+            expect(page.locator('.main-nav [aria-current="page"]')).to_have_attribute('href', '/' + route)
+        if snapshots and width in (390, 1891):
+            page.screenshot(path=snapshots / f'{route.strip("/") or "home"}-{width}.jpg',
+                            type='jpeg', quality=84, animations='disabled')
+        if route == 'igry/':
+            expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
+        if route:
+            continue
+        expect(page.get_by_role('link', name='Выбрать пятницу')).to_be_in_viewport()
+        expect(page.get_by_role('link', name='Выбрать пятницу')).to_have_attribute('href', '/igry/#join')
+        cover = page.get_by_role('img', name='Игроки в масках за столом 2LA noire')
+        expect(cover).to_be_visible()
+        assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
+        layout = page.evaluate("""() => {
+            const rect = (s) => document.querySelector(s).getBoundingClientRect().toJSON();
+            const range = document.createRange();
+            range.selectNodeContents(document.querySelector('.hero h1'));
+            return {
+              hero: rect('.hero-copy'), figure: rect('.hero-visual'), title: range.getBoundingClientRect().toJSON(),
+              background: getComputedStyle(document.querySelector('.hero-visual')).backgroundImage,
+              old: getComputedStyle(document.body).getPropertyValue('--old-site')
+            };
+        }""")
+        assert not layout['old'] and 'hero-table' not in layout['background']
+        assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
+        if width > 760:
+            assert layout['hero']['right'] < layout['figure']['left'], f'Hero overlap at {width}'
+        else:
+            assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
 
 
 def check_gallery(page, origin):
@@ -148,9 +156,9 @@ def check_gallery(page, origin):
     first.click()
     dialog = page.get_by_role('dialog')
     expect(dialog).to_be_visible()
-    expect(dialog.locator('figcaption')).to_contain_text('1 из 3')
+    expect(dialog.locator('figcaption')).to_contain_text('1 из 4')
     page.keyboard.press('ArrowRight')
-    expect(dialog.locator('figcaption')).to_contain_text('2 из 3')
+    expect(dialog.locator('figcaption')).to_contain_text('2 из 4')
     page.keyboard.press('Escape')
     expect(dialog).to_be_hidden()
     expect(first).to_be_focused()
@@ -173,6 +181,7 @@ def check_form(page, origin, server):
     page.get_by_role('button', name='Записаться на игру').click()
     expect(page.locator('#join-result')).to_contain_text('Ты в списке · Пятница, 20 ноября')
     assert server.submissions[-1]['evening_id'] == 'e20'
+    page.get_by_role('link', name='Рейтинг', exact=True).click()
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_hidden()
     page.get_by_role('button', name='Показать всех игроков (7)').click()
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
@@ -203,7 +212,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         check_form(page, origin, server)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'
         assert not errors, errors
-    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes, home and rules, fresh and old cache, gallery, sign-up, rating', flush=True)
+    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes × 6 pages, fresh and old cache, gallery, sign-up, rating', flush=True)
 
 
 def main():

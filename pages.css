@@ -12,5 +12,4 @@ body.page{background:var(--ink);color:var(--text)}
 .doc-roles{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}.doc-roles article{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}.doc-roles p{margin:0}
 .doc-pics{display:grid;gap:18px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}.doc-pics img{background:#fff;border-radius:14px;display:block;height:auto;width:100%}
 .doc-cta{margin-top:44px}
-.main-nav a[aria-current="page"] { color: var(--text); font-weight: 730; }
-@media (max-width: 720px) { .rules-header-cta { display: inline-flex; } .doc { padding: 34px 20px 58px; } .doc h2 { font-size: 1.35rem; } .doc-steps > li { padding: 18px 16px 18px 58px; } .doc-steps > li::before { left: 14px; top: 18px; } .doc-roles, .doc-pics { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 720px) { .doc { padding: 34px 20px 58px; } .doc h2 { font-size: 1.35rem; } .doc-steps > li { padding: 18px 16px 18px 58px; } .doc-steps > li::before { left: 14px; top: 18px; } .doc-roles, .doc-pics { grid-template-columns: minmax(0, 1fr); } }

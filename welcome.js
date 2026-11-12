@@ -49,7 +49,7 @@
   document.addEventListener('click', (event) => {
     const link = event.target.closest('a');
     if (!link) return;
-    if (['#join', '#join-form'].includes(link.getAttribute('href'))) window.goal('signup_click');
+    if (link.origin === location.origin && link.pathname === '/igry/' && link.hash === '#join') window.goal('signup_click');
     if (link.classList.contains('account-login')) window.goal('login_click');
   });
 })();

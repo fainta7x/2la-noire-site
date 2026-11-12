@@ -33,7 +33,8 @@
   const blocks = (value) => value.split(/\n\s*\n/).map((block) => block.trim().split('\n')).filter((lines) => lines.length > 1);
   const updateLink = (selector, value) => {
     const url = safeLink(value);
-    if (url) document.querySelector(selector).href = url;
+    const anchor = document.querySelector(selector);
+    if (url && anchor) anchor.href = url;
   };
 
   info.then((data) => {
@@ -41,15 +42,16 @@
     const site = data.site || {};
     Object.entries(fields).forEach(([key, selector]) => {
       const value = customized(site, key);
-      if (value) document.querySelector(selector).textContent = value;
+      const field = document.querySelector(selector);
+      if (value && field) field.textContent = value;
     });
     updateLink('#hub-tg', site.telegram_url);
     updateLink('#hub-vk', site.vk_url);
     updateLink('#hub-write', data.contacts?.find((entry) => entry.label === 'Telegram')?.url);
 
     const benefits = blocks(customized(site, 'benefits'));
-    if (benefits.length) {
-      const grid = document.getElementById('benefit-grid');
+    const grid = document.getElementById('benefit-grid');
+    if (grid && benefits.length) {
       grid.replaceChildren(...benefits.map(([title, ...lines]) => {
         const card = make('article');
         card.append(make('h4', title), make('p', lines.join(' ')));
@@ -59,17 +61,30 @@
     }
 
     const questions = blocks(customized(site, 'faq'));
-    if (questions.length) {
-      document.querySelector('.faq-list').replaceChildren(...questions.map(([question, ...lines]) => {
+    const faq = document.querySelector('.faq-list');
+    if (faq && questions.length) {
+      faq.replaceChildren(...questions.map(([question, ...lines]) => {
         const item = make('details');
         item.append(make('summary', question), make('p', lines.join(' ')));
         return item;
       }));
     }
 
+    const nextDate = document.getElementById('next-evening-date');
+    const nextPlace = document.getElementById('next-evening-place');
+    if (nextDate && nextPlace && data.evening) {
+      const evening = data.evening;
+      const startsAt = new Date(evening.starts_at);
+      if (Number.isFinite(startsAt.getTime())) {
+        const formatted = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', weekday: 'long', day: 'numeric', month: 'long' }).format(startsAt);
+        nextDate.textContent = formatted[0].toUpperCase() + formatted.slice(1);
+        nextPlace.textContent = [evening.schedule, evening.venue?.name].filter(Boolean).join(' · ');
+      }
+    }
+
     const gallery = document.getElementById('place-photos');
+    if (!gallery) return;
     const alreadyShown = new Set(Array.from(gallery.children, (item) => item.dataset.original));
-    alreadyShown.add(gallery.dataset.coverOriginal);
     const photos = Array.isArray(data.hero_photos) ? data.hero_photos : [];
     photos.filter((path) => typeof path === 'string' && path.startsWith('/') && !alreadyShown.has(path))
       .slice(0, 3).forEach((path) => {
@@ -91,6 +106,7 @@
   }).catch(() => {});
 
   const board = document.getElementById('rating-board');
+  if (!board) return;
   read('/rating').then((data) => {
     const players = Array.isArray(data.players) ? data.players : [];
     if (!players.length) return;

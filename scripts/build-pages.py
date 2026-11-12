@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ('index.html', 'pravila/index.html')
+PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html')
 STYLES = ('site.css', 'join.css', 'pages.css')
 SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js')
 LEGACY = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg', *STYLES, *SCRIPTS)
@@ -26,6 +26,15 @@ def inline_asset(name, allowed, tag):
 
 def build_page(path):
     html = (ROOT / path).read_text(encoding='utf-8')
+    route = '/' + path.removesuffix('index.html')
+    for name in ('header', 'footer'):
+        fragment = (ROOT / 'includes' / f'{name}.html').read_text(encoding='utf-8').strip()
+        if name == 'header' and route != '/':
+            fragment = fragment.replace(f'href="{route}"', f'href="{route}" aria-current="page"')
+        marker = f'<!-- include: {name} -->'
+        if html.count(marker) != 1:
+            raise ValueError(f'Expected one {name} marker in {path}')
+        html = html.replace(marker, fragment)
     html = STYLESHEET.sub(lambda match: inline_asset(match[1], STYLES, 'style'), html)
     scripts = []
     for match in DEFERRED.finditer(html):
