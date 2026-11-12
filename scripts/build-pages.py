@@ -53,7 +53,8 @@ def main():
     parser.add_argument('output', type=Path)
     output = parser.parse_args().output
     output.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(ROOT / 'img', output / 'img', dirs_exist_ok=True)
+    for folder in ('img', 'fonts'):
+        shutil.copytree(ROOT / folder, output / folder, dirs_exist_ok=True)
     # These URLs remain available for documents opened before the bundled release.
     for filename in PUBLIC:
         shutil.copy2(ROOT / filename, output / filename)

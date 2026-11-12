@@ -114,6 +114,21 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert response.ok or response.status == 304, f'{route} returned {response.status}'
         expect(page.get_by_role('heading', level=1, name=title, exact=True)).to_be_visible()
         expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
+        typography = page.evaluate("""async () => {
+            await document.fonts.ready;
+            const brand = document.querySelector('.site-header .brand-name');
+            return {
+              loaded: document.fonts.check('700 20px Roboto', 'Спортивная мафия'),
+              headline: getComputedStyle(document.querySelector('h1')).fontFamily,
+              brand: getComputedStyle(brand).fontFamily,
+              button: getComputedStyle(document.querySelector('.account a')).fontFamily,
+              headerGap: Math.abs(document.querySelector('.site-header .brand').getBoundingClientRect().top -
+                                  document.querySelector('.header-actions').getBoundingClientRect().top)
+            };
+        }""")
+        assert typography['loaded'] and typography['headline'].startswith('Roboto'), (route, width, typography)
+        assert typography['headline'] == typography['brand'] == typography['button'], (route, width, typography)
+        assert typography['headerGap'] <= 1, f'Header alignment at /{route}, {width}: {typography}'
         assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
         assert page.locator('.skip-link').bounding_box()['y'] < 0, f'Skip link visible at /{route}, {width}'
         if route:
@@ -147,6 +162,9 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
         if width > 760:
             assert layout['hero']['right'] < layout['figure']['left'], f'Hero overlap at {width}'
+            copy_center = (layout['hero']['top'] + layout['hero']['bottom']) / 2
+            photo_center = (layout['figure']['top'] + layout['figure']['bottom']) / 2
+            assert abs(copy_center - photo_center) <= 1, f'Hero columns unaligned at {width}'
         else:
             assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
 
@@ -168,6 +186,22 @@ def check_cover_photos(page, origin):
     expect(count).to_have_text('3 / 3')
     expect(photos.locator('.hero-slide:visible')).to_have_count(1)
     assert photos.locator('.hero-slide:visible img').evaluate('(img) => getComputedStyle(img).animationName') == 'none'
+
+
+def check_table_art(page, origin, snapshots=None):
+    for width, height in ((390, 844), (1891, 933)):
+        page.set_viewport_size({'width': width, 'height': height})
+        page.emulate_media(reduced_motion='no-preference')
+        page.goto(origin, wait_until='domcontentloaded')
+        table = page.locator('.table-art')
+        table.scroll_into_view_if_needed()
+        expect(table).to_have_class('table-art is-playing')
+        expect(table.locator('.table-art-seat')).to_have_count(10)
+        assert table.locator('.table-art-seat').first.evaluate('(seat) => getComputedStyle(seat).animationName') == 'table-seat'
+        if snapshots:
+            table.screenshot(path=snapshots / f'table-{width}.jpg', type='jpeg', quality=88, animations='disabled')
+        page.emulate_media(reduced_motion='reduce')
+        assert table.locator('.table-art-seat').first.evaluate('(seat) => getComputedStyle(seat).animationName') == 'none'
 
 
 def check_gallery(page, origin):
@@ -230,6 +264,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
 
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
+        check_table_art(page, origin, snapshots)
         check_cover_photos(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
