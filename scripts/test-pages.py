@@ -145,7 +145,7 @@ def check_layout(page, origin, width, height, snapshots=None):
             continue
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
-        cover = page.get_by_role('img', name='Игроки в масках за столом 2LA noire')
+        cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
         layout = page.evaluate("""() => {
@@ -159,14 +159,17 @@ def check_layout(page, origin, width, height, snapshots=None):
             };
         }""")
         assert not layout['old'] and 'hero-table' not in layout['background']
+        assert layout['title']['left'] >= layout['hero']['left'] - 1, f'Headline overflow at {width}: {layout}'
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
-        if width > 760:
-            assert layout['hero']['right'] < layout['figure']['left'], f'Hero overlap at {width}'
-            copy_center = (layout['hero']['top'] + layout['hero']['bottom']) / 2
-            photo_center = (layout['figure']['top'] + layout['figure']['bottom']) / 2
-            assert abs(copy_center - photo_center) <= 1, f'Hero columns unaligned at {width}'
-        else:
-            assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
+        assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
+        copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
+        photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
+        assert abs(copy_center - photo_center) <= 1, f'Hero misaligned at {width}: {layout}'
+        if snapshots and width in (390, 1891):
+            gallery = page.locator('.home-gallery')
+            gallery.scroll_into_view_if_needed()
+            gallery.locator('img').evaluate_all('(images) => Promise.all(images.map((img) => img.decode()))')
+            gallery.screenshot(path=snapshots / f'home-photos-{width}.jpg', type='jpeg', quality=84)
 
 
 def check_cover_photos(page, origin):
@@ -174,34 +177,18 @@ def check_cover_photos(page, origin):
     page.goto(origin, wait_until='domcontentloaded')
     photos = page.get_by_role('region', name='Фотографии клуба')
     count = photos.locator('.hero-photo-count')
-    next_photo = photos.get_by_role('button', name='Следующее фото')
-    expect(count).to_have_text('1 / 3')
+    next_photo = photos.get_by_role('button', name='Следующий кадр')
+    expect(count).to_have_text('1 / 4')
     next_photo.focus()
     page.keyboard.press('Enter')
-    expect(count).to_have_text('2 / 3')
+    expect(count).to_have_text('2 / 4')
     expect(photos.get_by_role('img', name='Игроки слушают речь за столом')).to_be_visible()
     expect(next_photo).to_be_focused()
-    photos.get_by_role('button', name='Предыдущее фото').click()
-    photos.get_by_role('button', name='Предыдущее фото').click()
-    expect(count).to_have_text('3 / 3')
+    photos.get_by_role('button', name='Предыдущий кадр').click()
+    photos.get_by_role('button', name='Предыдущий кадр').click()
+    expect(count).to_have_text('4 / 4')
     expect(photos.locator('.hero-slide:visible')).to_have_count(1)
     assert photos.locator('.hero-slide:visible img').evaluate('(img) => getComputedStyle(img).animationName') == 'none'
-
-
-def check_table_art(page, origin, snapshots=None):
-    for width, height in ((390, 844), (1891, 933)):
-        page.set_viewport_size({'width': width, 'height': height})
-        page.emulate_media(reduced_motion='no-preference')
-        page.goto(origin, wait_until='domcontentloaded')
-        table = page.locator('.table-art')
-        table.scroll_into_view_if_needed()
-        expect(table).to_have_class('table-art is-playing')
-        expect(table.locator('.table-art-seat')).to_have_count(10)
-        assert table.locator('.table-art-seat').first.evaluate('(seat) => getComputedStyle(seat).animationName') == 'table-seat'
-        if snapshots:
-            table.screenshot(path=snapshots / f'table-{width}.jpg', type='jpeg', quality=88, animations='disabled')
-        page.emulate_media(reduced_motion='reduce')
-        assert table.locator('.table-art-seat').first.evaluate('(seat) => getComputedStyle(seat).animationName') == 'none'
 
 
 def check_gallery(page, origin):
@@ -264,7 +251,6 @@ def check_browser(browser_type, origin, server, snapshots=None):
 
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
-        check_table_art(page, origin, snapshots)
         check_cover_photos(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
