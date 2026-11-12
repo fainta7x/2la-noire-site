@@ -32,5 +32,31 @@ body.page{background:var(--ink);color:var(--text)}
 }
 
 .doc h2 + .rule-art { max-width: none; }
-.rule-teams { display: flex; gap: 12px; }
+.rule-teams { margin-top: 14px; }
 .rule-teams .rule-art { max-width: 120px; }
+
+.rule-team-red { border-top: 3px solid #ef4856 !important; }
+.rule-team-black { border-top: 3px solid #839aba !important; }
+.doc-no, .rule-differences {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.doc-no li, .rule-differences li {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 0;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.doc-no .rule-art, .rule-differences .rule-art { margin: 0; border-radius: 7px; }
+@media (max-width: 620px) {
+  .doc-no, .rule-differences { grid-template-columns: minmax(0, 1fr); }
+}
