@@ -42,7 +42,7 @@
   }).join('');
 
   const form = () => done
-    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Место за тобой' : 'Заявку приняли') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если планы поменяются, просто ответь нам.') + '</p></div>'
+    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Ты записан' : 'Заявку приняли') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если не получится прийти, просто скажи нам.') + '</p></div>'
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
@@ -59,7 +59,7 @@
     const slot = document.getElementById('join-board-slot');
     const sticky = document.getElementById('join-sticky');
     if (slot) slot.innerHTML = ev && seats && seats.games.length
-      ? '<div class="join-board" data-testid="join-seats"><h3>Кто уже записался' + (seats.going > 0 ? ' · ' + seats.going : '') + '</h3>' + (seats.going === 0 ? '<p class="join-sub">Пока никого. Займи первое место.</p>' : '<p class="join-sub">Номера как на наших столах.</p>') + seatBoard(fresh || new Set()) + '<p class="join-news" role="status" aria-live="polite">' + esc(news) + '</p></div>' : '';
+      ? '<div class="join-board" data-testid="join-seats"><h3>Кто уже записался' + (seats.going > 0 ? ' · ' + seats.going : '') + '</h3>' + (seats.going === 0 ? '<p class="join-sub">Пока никого. Займи первое место.</p>' : '<p class="join-sub">Места, как за нашим столом.</p>') + seatBoard(fresh || new Set()) + '<p class="join-news" role="status" aria-live="polite">' + esc(news) + '</p></div>' : '';
     if (sticky) {
       const free = seats ? (seats.games || []).reduce((s, g) => s + Math.max(0, g.target - g.taken), 0) : null;
       if (ev && !done) { sticky.innerHTML = '<div><strong>' + esc(day(ev.starts_at)) + '</strong><span>' + (free === null ? esc(ev.venue.name) : free > 0 ? 'Свободно мест: ' + free : 'Столы собраны, можно в резерв') + '</span></div><a href="#join-form">Занять место</a>'; sticky.classList.add('is-on'); document.body.classList.add('has-sticky'); }
@@ -74,10 +74,10 @@
       '<div class="join-layout"><div class="join-head">' +
         '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Когда придёшь?' : 'Ближайшая игра') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
         (ev ? '<p class="join-when" data-testid="join-countdown">через ' + left(ev.starts_at) + '</p>' +
-          '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
+          '<ul class="join-facts"><li><span>Время</span><strong>' + esc('Собираемся в ' + clock(new Date(new Date(ev.starts_at).getTime() - 30 * 60000)) + ', первая игра в ' + clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
           : '<p class="join-sub" style="margin-top:22px">Дата ближайшего обучения пока не объявлена. Оставь контакт, и мы напишем, когда она появится.</p>') +
       '</div><div>' +
-        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Записаться на игру') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт, и место закрепится за тобой.</p>') + form() +
+        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Запишись на пятницу') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и как с тобой связаться. Место мы сразу закрепим, а потом напишем.</p>') + form() +
         '</div><div id="join-board-slot" class="join-board-gap"></div></div></div>';
     renderBoard(); bind();
   };
