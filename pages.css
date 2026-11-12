@@ -21,7 +21,8 @@ body.page{background:var(--ink);color:var(--text)}
   margin: 14px 0;
   border-radius: 12px;
   color: var(--violet-light);
-  background: linear-gradient(135deg, #38264d, #201729);
+  aspect-ratio: var(--ratio);
+  background: var(--sheet) var(--x) var(--y) / var(--size) auto no-repeat;
 }
 .doc-steps > li { display: flow-root; }
 .doc-steps .rule-art { float: right; width: clamp(94px, 18vw, 156px); margin: 0 0 10px 18px; }
@@ -29,3 +30,7 @@ body.page{background:var(--ink);color:var(--text)}
 @media (max-width: 540px) {
   .doc-steps .rule-art { float: none; width: min(156px, 100%); margin: 0 0 12px; }
 }
+
+.doc h2 + .rule-art { max-width: none; }
+.rule-teams { display: flex; gap: 12px; }
+.rule-teams .rule-art { max-width: 120px; }
