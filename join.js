@@ -21,7 +21,7 @@
   const maskPhone = (raw) => { let d = String(raw || '').replace(/\D/g, ''); if (d[0] === '7' || d[0] === '8') d = d.slice(1); if (d[0] === '8' || d[0] === '7') d = d.slice(1); d = d.slice(0, 10); let out = '+7'; if (d.length) out += ' (' + d.slice(0, 3); if (d.length >= 3) out += ')'; if (d.length > 3) out += ' ' + d.slice(3, 6); if (d.length > 6) out += '-' + d.slice(6, 8); if (d.length > 8) out += '-' + d.slice(8, 10); return out; };
   const PLACEHOLDER = { telegram: '@твой_ник', vk: 'vk.com/твоя_страница', phone: '+7 (900) 123-45-67' };
   const LABEL = { telegram: 'Твой ник в Telegram', vk: 'Ссылка на твою страницу ВК', phone: 'Твой номер телефона' };
-  const CHANNEL = { telegram: 'Напишем тебе в Telegram', vk: 'Напишем тебе во ВКонтакте', phone: 'Позвоним или напишем тебе на этот номер' };
+  const CHANNEL = { telegram: 'Мы напишем тебе в Telegram', vk: 'Мы напишем тебе во ВКонтакте', phone: 'Мы позвоним или напишем тебе на этот номер' };
   let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '', doneBooked = false, doneKept = false;
   // The evening the person looks at: the one picked in the list, otherwise the nearest.
   const current = () => { const list = (page && page.evenings) || []; return list.find((e) => e.id === chosen) || (page && page.evening) || list[0] || null; };
@@ -42,14 +42,14 @@
   }).join('');
 
   const form = () => done
-    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Место за тобой' : 'Заявку приняли') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если планы поменяются, просто ответь нам.') + '</p></div>'
+    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Ты записан' : 'Заявка принята') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если не получится прийти, сообщи нам.') + '</p></div>'
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
-      '<label>Тебя кто-то пригласил? Напиши, кто<input type="text" id="join-friend" maxlength="60" value="' + esc(params.get('ref') || '') + '"></label>' +
+      '<details class="join-ref"' + (params.get('ref') ? ' open' : '') + '><summary>Тебя пригласил друг?</summary><label>Как его зовут<input type="text" id="join-friend" maxlength="60" value="' + esc(params.get('ref') || '') + '"></label></details>' +
       '<input class="join-trap" type="text" id="join-trap" tabindex="-1" autocomplete="off" aria-hidden="true">' +
       '<p class="join-error" id="join-error" role="alert"></p>' +
-      '<button class="primary-button" id="join-send" type="submit" disabled><span>Отправить заявку</span><span class="button-arrow">→</span></button></form>';
+      '<button class="primary-button" id="join-send" type="submit" disabled><span>Записаться</span><span class="button-arrow">→</span></button></form>';
 
   let formDraft = { name: '', contact: '' };
   let news = '';
@@ -59,7 +59,7 @@
     const slot = document.getElementById('join-board-slot');
     const sticky = document.getElementById('join-sticky');
     if (slot) slot.innerHTML = ev && seats && seats.games.length
-      ? '<div class="join-board" data-testid="join-seats"><h3>Кто уже записался' + (seats.going > 0 ? ' · ' + seats.going : '') + '</h3>' + (seats.going === 0 ? '<p class="join-sub">Пока никого. Займи первое место.</p>' : '<p class="join-sub">Номера как на наших столах.</p>') + seatBoard(fresh || new Set()) + '<p class="join-news" role="status" aria-live="polite">' + esc(news) + '</p></div>' : '';
+      ? '<div class="join-board" data-testid="join-seats"><h3>Кто уже записался' + (seats.going > 0 ? ' · ' + seats.going : '') + '</h3>' + (seats.going === 0 ? '<p class="join-sub">Пока никого. Займи первое место.</p>' : '<p class="join-sub">Номера, как за нашим столом.</p>') + seatBoard(fresh || new Set()) + '<p class="join-news" role="status" aria-live="polite">' + esc(news) + '</p></div>' : '';
     if (sticky) {
       const free = seats ? (seats.games || []).reduce((s, g) => s + Math.max(0, g.target - g.taken), 0) : null;
       if (ev && !done) { sticky.innerHTML = '<div><strong>' + esc(day(ev.starts_at)) + '</strong><span>' + (free === null ? esc(ev.venue.name) : free > 0 ? 'Свободно мест: ' + free : 'Столы собраны, можно в резерв') + '</span></div><a href="#join-form">Занять место</a>'; sticky.classList.add('is-on'); document.body.classList.add('has-sticky'); }
@@ -72,13 +72,13 @@
     if (!page) { root.innerHTML = '<p class="join-empty">Загружаем ближайшее обучение…</p>'; return; }
     root.innerHTML =
       '<div class="join-layout"><div class="join-head">' +
-        '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Выбери пятницу' : 'Ближайшее обучение') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
+        '<p class="eyebrow">' + ('Расписание') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
         (ev ? '<p class="join-when" data-testid="join-countdown">через ' + left(ev.starts_at) + '</p>' +
-          '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
+          '<ul class="join-facts"><li><span>Время</span><strong>' + esc('Сбор в ' + clock(new Date(new Date(ev.starts_at).getTime() - 30 * 60000)) + ', первая игра в ' + clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
           : '<p class="join-sub" style="margin-top:22px">Дата ближайшего обучения пока не объявлена. Оставь контакт, и мы напишем, когда она появится.</p>') +
-      '</div><div><div id="join-board-slot"></div>' +
-        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Хочешь прийти?') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт, и место закрепится за тобой.</p>') + form() +
-        '<p class="join-alt">Или запишись сам: <a href="' + (ev && ev.telegram_url ? esc(ev.telegram_url) : TELEGRAM) + '">Telegram</a>' + (ev ? ' · <a href="' + esc(ev.join_url) + '">ВКонтакте</a>' : '') + '</p></div></div></div>';
+      '</div><div>' +
+        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Запись на игру') + '</h3>' + (done ? '' : '<p class="join-sub">Выбери пятницу, оставь имя и контакт. Место закрепится за тобой, мы напишем и подтвердим.</p>') + form() +
+        '</div><div id="join-board-slot" class="join-board-gap"></div></div></div>';
     renderBoard(); bind();
   };
 
