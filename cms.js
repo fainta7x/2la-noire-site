@@ -14,7 +14,7 @@
   };
   const fields = {
     hero_lead: '.hero-lead',
-    schedule_line: '.hero-note',
+    schedule_line: '.schedule-note',
     about: '#about-copy',
     newcomers: '#newcomers-copy',
     audience: '.culture-copy',
@@ -43,7 +43,10 @@
     Object.entries(fields).forEach(([key, selector]) => {
       const value = customized(site, key);
       const field = document.querySelector(selector);
-      if (value && field) field.textContent = value;
+      if (value && field) {
+        field.textContent = value;
+        field.hidden = false;
+      }
     });
     updateLink('#hub-tg', site.telegram_url);
     updateLink('#hub-vk', site.vk_url);
@@ -71,14 +74,13 @@
     }
 
     const nextDate = document.getElementById('next-evening-date');
-    const nextPlace = document.getElementById('next-evening-place');
-    if (nextDate && nextPlace && data.evening) {
+    if (nextDate && data.evening) {
       const evening = data.evening;
       const startsAt = new Date(evening.starts_at);
       if (Number.isFinite(startsAt.getTime())) {
         const formatted = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', weekday: 'long', day: 'numeric', month: 'long' }).format(startsAt);
         nextDate.textContent = formatted[0].toUpperCase() + formatted.slice(1);
-        nextPlace.textContent = [evening.schedule, evening.venue?.name].filter(Boolean).join(' · ');
+        nextDate.hidden = false;
       }
     }
 

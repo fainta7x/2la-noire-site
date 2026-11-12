@@ -22,7 +22,7 @@ PAGES = {
     'igry/': 'Расписание и запись',
     'novichkam/': 'Твой первый вечер',
     'pravila/': 'Правила спортивной мафии',
-    'foto/': 'Фото с игровых вечеров',
+    'foto/': 'Фото с игр',
     'rating/': 'Клубный рейтинг',
 }
 LEGACY = {
@@ -128,8 +128,8 @@ def check_layout(page, origin, width, height, snapshots=None):
                             type='jpeg', quality=84, animations='disabled')
         if route:
             continue
-        expect(page.get_by_role('link', name='Выбрать пятницу')).to_be_in_viewport()
-        expect(page.get_by_role('link', name='Выбрать пятницу')).to_have_attribute('href', '/igry/#join')
+        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
+        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
         cover = page.get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
@@ -151,6 +151,25 @@ def check_layout(page, origin, width, height, snapshots=None):
             assert layout['hero']['bottom'] < layout['figure']['top'], f'Hero overlap at {width}'
 
 
+def check_cover_photos(page, origin):
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(origin, wait_until='domcontentloaded')
+    photos = page.get_by_role('region', name='Фотографии клуба')
+    count = photos.locator('.hero-photo-count')
+    next_photo = photos.get_by_role('button', name='Следующее фото')
+    expect(count).to_have_text('1 / 3')
+    next_photo.focus()
+    page.keyboard.press('Enter')
+    expect(count).to_have_text('2 / 3')
+    expect(photos.get_by_role('img', name='Игроки слушают речь за столом')).to_be_visible()
+    expect(next_photo).to_be_focused()
+    photos.get_by_role('button', name='Предыдущее фото').click()
+    photos.get_by_role('button', name='Предыдущее фото').click()
+    expect(count).to_have_text('3 / 3')
+    expect(photos.locator('.hero-slide:visible')).to_have_count(1)
+    assert photos.locator('.hero-slide:visible img').evaluate('(img) => getComputedStyle(img).animationName') == 'none'
+
+
 def check_gallery(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin, wait_until='domcontentloaded')
@@ -169,7 +188,7 @@ def check_gallery(page, origin):
 
 def check_form(page, origin, server):
     page.goto(origin, wait_until='domcontentloaded')
-    page.get_by_role('link', name='Выбрать пятницу').click()
+    page.get_by_role('link', name='Записаться на игру', exact=True).click()
     page.get_by_label('Имя', exact=True).fill('Тест формы')
     page.get_by_label('Имя пользователя в Telegram').fill('@test_username')
     page.get_by_role('radio', name='Пятница, 20 ноября').focus()
@@ -211,6 +230,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
 
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
+        check_cover_photos(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'

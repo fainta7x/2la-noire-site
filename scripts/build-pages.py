@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html')
 STYLES = ('site.css', 'join.css', 'pages.css')
-SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js')
+SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js', 'home.js')
 LEGACY = (*STYLES, 'welcome.js', 'join.js', 'cms.js', 'account.js')
 PUBLIC = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg')
 

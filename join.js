@@ -51,8 +51,8 @@
           '<div id="join-evening" aria-live="polite"></div>' +
         '</div>' +
         '<div class="join-form-card">' +
-          '<h3 id="join-form-heading">' + (selected ? 'Оставь контакт' : 'Узнать о следующей игре') + '</h3>' +
-          '<p class="join-sub" id="join-instructions">' + (selected ? 'Укажи имя и способ связи. Итог записи появится здесь после отправки.' : 'Напишем, когда появится дата.') + '</p>' +
+          '<h3 id="join-form-heading">' + (selected ? 'Запись на игру' : 'Узнать о следующей игре') + '</h3>' +
+          '<p class="join-sub" id="join-instructions">' + (selected ? 'Напиши своё имя и как с тобой связаться.' : 'Напишем, когда появится дата.') + '</p>' +
           '<form class="join-form" id="join-form">' +
             '<label class="join-field">Имя<input id="join-name" type="text" required minlength="2" maxlength="40" autocomplete="given-name"></label>' +
             '<fieldset class="join-kinds"><legend>Где с тобой связаться?</legend><div class="join-options">' +
@@ -61,7 +61,7 @@
             '<label class="join-field"><span id="join-contact-label"></span><input id="join-contact" required maxlength="120" autocapitalize="none" spellcheck="false"></label>' +
             '<label class="join-field">Кто пригласил? (необязательно)<input type="text" id="join-friend" maxlength="60" value="' + escape(params.get('ref') || '') + '"></label>' +
             '<input class="join-trap" type="text" id="join-trap" tabindex="-1" autocomplete="off" aria-hidden="true">' +
-            '<p class="join-note">Используем контакт, чтобы связаться по записи.</p>' +
+            '<p class="join-note">Контакт нужен для связи по этой записи.</p>' +
             '<p class="join-error" id="join-error" role="alert"></p>' +
             '<button class="primary-button" type="submit">' + (selected ? 'Записаться на игру' : 'Сообщить мне о дате') + '</button>' +
           '</form>' +
@@ -99,7 +99,7 @@
       const details = root.querySelector('#join-evening');
       const alt = root.querySelector('#join-alt');
       if (!event) {
-        details.innerHTML = '<h3 class="join-heading">Следующая дата пока не объявлена</h3>';
+        details.innerHTML = '<h3 class="join-heading">Пока нет даты следующей игры</h3>';
         alt.innerHTML = '<a href="' + escape(contactOrganizer) + '">Написать организатору</a>';
         return;
       }
