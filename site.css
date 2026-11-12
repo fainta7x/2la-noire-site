@@ -71,7 +71,7 @@ img { display: block; max-width: 100%; }
 .hero-visual { position: relative; min-width: 0; overflow: hidden; border: 1px solid #56515a; border-radius: clamp(15px, 2vw, 28px); box-shadow: 0 24px 60px #0006; background: var(--surface); }
 .hero-slide { position: relative; margin: 0; overflow: hidden; background: #252630; }
 .hero-slide::after { content: ""; position: absolute; inset: 13px; border: 1px solid #ffecf084; border-radius: 12px; pointer-events: none; mask-image: conic-gradient(from 45deg, transparent 0% 21%, #000 24% 26%, transparent 29% 46%, #000 49% 51%, transparent 54% 71%, #000 74% 76%, transparent 79% 96%, #000 99%); }
-.hero-slide img { width: 100%; height: auto; aspect-ratio: 7 / 5; object-fit: cover; object-position: 57% 59%; }
+.hero-slide img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; object-position: 57% 59%; }
 .hero-slide:nth-child(2) img { object-position: center 51%; }
 .hero-slide:nth-child(3) img { object-position: center 38%; }
 .hero-photo-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px 6px 16px; background: var(--surface); border-top: 1px solid var(--line); }
@@ -182,7 +182,6 @@ footer { border-top: 1px solid var(--line); }
   .hero-copy { padding: 0; }
   .hero-lead { margin-top: 16px; }
   .hero-actions { gap: 7px 16px; margin-top: 20px; }
-  .hero-slide img { aspect-ratio: 5 / 3; }
   .photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .photo-feature { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 5 / 3; }
   .photo-wide { grid-column: 1 / -1; }
