@@ -122,8 +122,8 @@ def check_layout(page, origin, width, height, snapshots=None):
               headline: getComputedStyle(document.querySelector('h1')).fontFamily,
               brand: getComputedStyle(brand).fontFamily,
               button: getComputedStyle(document.querySelector('.account a')).fontFamily,
-              headerGap: Math.abs(document.querySelector('.site-header .brand').getBoundingClientRect().top -
-                                  document.querySelector('.header-actions').getBoundingClientRect().top)
+              headerGap: Math.abs(document.querySelector('.site-header .brand').getBoundingClientRect().toJSON().y + document.querySelector('.site-header .brand').getBoundingClientRect().height / 2 -
+                                  document.querySelector('.header-actions').getBoundingClientRect().top - document.querySelector('.header-actions').getBoundingClientRect().height / 2)
             };
         }""")
         assert typography['loaded'] and typography['headline'].startswith('Roboto'), (route, width, typography)
