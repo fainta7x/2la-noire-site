@@ -17,10 +17,12 @@
     const d = Math.floor(ms / 86400000), h = Math.floor((ms % 86400000) / 3600000), m = Math.floor((ms % 3600000) / 60000);
     return d > 0 ? d + ' дн. ' + h + ' ч.' : h > 0 ? h + ' ч. ' + m + ' мин.' : m + ' мин.';
   };
-  const PLACEHOLDER = { telegram: '@твой_ник', vk: 'vk.com/твоя_страница', phone: '+7 900 123-45-67' };
+  // Номер всегда начинается с +7: цифры подставляются в маску +7 (900) 123-45-67, ведущие 7 и 8 не дублируются.
+  const maskPhone = (raw) => { let d = String(raw || '').replace(/\D/g, ''); if (d[0] === '7' || d[0] === '8') d = d.slice(1); if (d[0] === '8' || d[0] === '7') d = d.slice(1); d = d.slice(0, 10); let out = '+7'; if (d.length) out += ' (' + d.slice(0, 3); if (d.length >= 3) out += ')'; if (d.length > 3) out += ' ' + d.slice(3, 6); if (d.length > 6) out += '-' + d.slice(6, 8); if (d.length > 8) out += '-' + d.slice(8, 10); return out; };
+  const PLACEHOLDER = { telegram: '@твой_ник', vk: 'vk.com/твоя_страница', phone: '+7 (900) 123-45-67' };
   const LABEL = { telegram: 'Твой ник в Telegram', vk: 'Ссылка на твою страницу ВК', phone: 'Твой номер телефона' };
-  const CHANNEL = { telegram: 'в Telegram', vk: 'во ВКонтакте', phone: 'по телефону' };
-  let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '';
+  const CHANNEL = { telegram: 'Напишем тебе в Telegram', vk: 'Напишем тебе во ВКонтакте', phone: 'Позвоним или напишем тебе на этот номер' };
+  let page = null, seats = null, known = null, kind = 'telegram', done = null, chosen = null, doneDay = '', doneBooked = false, doneKept = false;
   // The evening the person looks at: the one picked in the list, otherwise the nearest.
   const current = () => { const list = (page && page.evenings) || []; return list.find((e) => e.id === chosen) || (page && page.evening) || list[0] || null; };
 
@@ -40,7 +42,7 @@
   }).join('');
 
   const form = () => done
-    ? '<div class="join-done" data-testid="join-done"><strong>Записали' + (doneDay ? ': ' + esc(doneDay) : '') + '</strong><p>Мы напишем тебе ' + CHANNEL[done] + ' в течение дня и подтвердим место. Ответь нам, если планы поменяются.</p></div>'
+    ? '<div class="join-done" data-testid="join-done"><strong>' + (doneKept ? 'Ты уже записан на другую пятницу' : doneBooked ? 'Место за тобой' : 'Заявку приняли') + (doneDay && !doneKept ? ': ' + esc(doneDay) : '') + '</strong><p>' + (doneKept ? 'Чтобы перенести место на другой вечер, просто напиши нам, мы поменяем.' : CHANNEL[done] + ' в течение дня и подтвердим. Если планы поменяются, просто ответь нам.') + '</p></div>'
     : '<form class="join-form" id="join-form" novalidate><label>Как тебя зовут<input type="text" id="join-name" maxlength="40" autocomplete="given-name"></label>' +
       '<div class="join-kinds" role="radiogroup" aria-label="Где тебе удобнее общаться">' + ['telegram', 'vk', 'phone'].map((k) => '<button type="button" role="radio" aria-checked="' + (kind === k) + '" data-kind="' + k + '">' + ({ telegram: 'Telegram', vk: 'ВКонтакте', phone: 'Телефон' })[k] + '</button>').join('') + '</div>' +
       '<label>' + LABEL[kind] + '<input type="' + (kind === 'phone' ? 'tel' : 'text') + '" id="join-contact" maxlength="120" placeholder="' + PLACEHOLDER[kind] + '"></label>' +
@@ -72,10 +74,10 @@
       '<div class="join-layout"><div class="join-head">' +
         '<p class="eyebrow">' + ((page.evenings || []).length > 1 ? 'Выбери пятницу' : 'Ближайшее обучение') + '</p>' + picker(ev) + '<h2>' + (ev ? esc(day(ev.starts_at)) : 'Скоро объявим дату') + '</h2>' +
         (ev ? '<p class="join-when" data-testid="join-countdown">через ' + left(ev.starts_at) + '</p>' +
-          '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(ev.price) + '</strong></li></ul>'
+          '<ul class="join-facts"><li><span>Время</span><strong>' + esc(ev.schedule || clock(ev.starts_at)) + '</strong></li><li><span>Место</span><div><strong>' + esc(ev.venue.name) + '</strong>' + (ev.venue.address ? '<br>' + esc(ev.venue.address) + (ev.venue.mapUrl ? ' · <a href="' + esc(ev.venue.mapUrl) + '" target="_blank" rel="noreferrer">как добраться</a>' : '') : '') + '</div></li><li><span>Цена</span><strong>' + esc(String(ev.price || '').split(/[,—]/)[0].trim() || 'Первые 2 вечера бесплатно') + '</strong></li></ul>'
           : '<p class="join-sub" style="margin-top:22px">Дата ближайшего обучения пока не объявлена. Оставь контакт, и мы напишем, когда она появится.</p>') +
       '</div><div><div id="join-board-slot"></div>' +
-        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Хочешь прийти?') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт. Мы напишем и запишем тебя.</p>') + form() +
+        '<div class="join-form-card"><h3>' + (done ? 'Готово' : 'Хочешь прийти?') + '</h3>' + (done ? '' : '<p class="join-sub">Оставь имя и контакт, и место закрепится за тобой.</p>') + form() +
         '<p class="join-alt">Или запишись сам: <a href="' + (ev && ev.telegram_url ? esc(ev.telegram_url) : TELEGRAM) + '">Telegram</a>' + (ev ? ' · <a href="' + esc(ev.join_url) + '">ВКонтакте</a>' : '') + '</p></div></div></div>';
     renderBoard(); bind();
   };
@@ -86,7 +88,8 @@
     if (!f) return;
     const name = document.getElementById('join-name'), contact = document.getElementById('join-contact'), send = document.getElementById('join-send');
     name.value = formDraft.name; contact.value = formDraft.contact;
-    const check = () => { formDraft = { name: name.value, contact: contact.value }; send.disabled = name.value.trim().length < 2 || !contact.value.trim(); };
+    const check = () => { formDraft = { name: name.value, contact: contact.value }; const okContact = kind === 'phone' ? contact.value.replace(/\D/g, '').length === 11 : Boolean(contact.value.trim()); send.disabled = name.value.trim().length < 2 || !okContact; };
+    if (kind === 'phone') { contact.addEventListener('focus', () => { if (!contact.value) { contact.value = '+7'; formDraft.contact = '+7'; } }); contact.addEventListener('input', () => { contact.value = maskPhone(contact.value); }); contact.addEventListener('blur', () => { if (contact.value === '+7') { contact.value = ''; check(); } }); }
     name.addEventListener('input', check); contact.addEventListener('input', check); check();
     f.querySelectorAll('[data-kind]').forEach((b) => b.addEventListener('click', () => { kind = b.dataset.kind; formDraft.contact = ''; render(); }));
     f.addEventListener('submit', async (e) => {
@@ -96,7 +99,7 @@
         const r = await fetch(API + '/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.value, contact_kind: kind, contact_value: contact.value, source, evening_id: (current() || {}).id || '', referred_by: document.getElementById('join-friend').value, website: document.getElementById('join-trap').value }) });
         const body = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(body.error || 'Не удалось отправить. Попробуй ещё раз или напиши нам в Telegram.');
-        if (window.goal) window.goal('lead_sent'); done = kind; doneDay = current() ? day(current().starts_at) : ''; render();
+        if (window.goal) window.goal('lead_sent'); done = kind; doneBooked = body.booked === true; doneKept = body.already_booked === true && body.booked !== true; doneDay = current() ? day(current().starts_at) : ''; render(); loadSeats();
       } catch (err) { document.getElementById('join-error').textContent = err.message || 'Не удалось отправить'; check(); }
     });
   };
