@@ -139,8 +139,14 @@ img { display: block; max-width: 100%; }
 .text-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 630; }
 
 .first-visit { background: radial-gradient(ellipse at 80% 5%, #392348, transparent 67%), var(--ink-raised); }
-.first-visit-photo { margin: clamp(24px, 4vw, 48px) 0 0; overflow: hidden; border-radius: clamp(16px, 3vw, 30px); }
-.first-visit-photo img { width: 100%; height: clamp(200px, 33vw, 370px); object-fit: cover; object-position: center 61%; }
+.first-visit-photo {
+  display: grid;
+  place-items: center;
+  margin: clamp(24px, 4vw, 48px) 0 0;
+  border-radius: clamp(16px, 3vw, 30px);
+  background: radial-gradient(ellipse at center, #583447, var(--ink));
+}
+.first-visit-photo img { width: auto; height: auto; max-height: min(560px, 105vw); border-radius: 14px; }
 .first-visit-link { margin-top: 20px; }
 .section-heading { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 48px; align-items: end; }
 .section-heading > p, .section-heading #newcomers-copy { color: var(--muted); max-width: 48ch; margin: 0; }
@@ -271,3 +277,29 @@ footer { border-top: 1px solid var(--line); }
   }
   .gallery-preview .photo-preview { margin-top: 0; scroll-snap-align: start; }
 }
+
+.player-paths { align-items: stretch; gap: clamp(14px, 2.5vw, 28px); }
+.player-paths > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(20px, 3.5vw, 42px);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(145deg, #2d1e3b, var(--ink-raised));
+}
+.player-paths h2 { font-size: clamp(1.65rem, 3.5vw, 3rem); text-wrap: wrap; }
+.player-paths .secondary-button { margin-top: auto; }
+.header-cta, .header-actions .account a, .footer-inner nav a {
+  border-radius: 999px;
+  padding-inline: 16px;
+}
+.footer-inner nav { gap: 8px; }
+.footer-inner nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  background: var(--ink-raised);
+}
+.footer-inner nav a:hover { border-color: var(--violet-light); }
