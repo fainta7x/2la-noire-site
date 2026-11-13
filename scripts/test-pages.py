@@ -200,6 +200,14 @@ def check_gallery(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin, wait_until='domcontentloaded')
     page.get_by_role('link', name='Фото', exact=True).click()
+    for width in (390, 1440):
+        page.set_viewport_size({'width': width, 'height': 900})
+        sizes = page.locator('#place-photos > .photo').evaluate_all("""photos => photos.map(photo => {
+          const {width, height} = photo.getBoundingClientRect();
+          return [width, height];
+        })""")
+        assert len(sizes) >= 19 and all(size == sizes[0] for size in sizes), (width, sizes)
+    page.set_viewport_size({'width': 390, 'height': 844})
     first = page.get_by_role('link', name='Игроки слушают речь за столом')
     first.click()
     dialog = page.get_by_role('dialog')
