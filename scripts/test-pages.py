@@ -271,6 +271,19 @@ def check_form(page, origin, server):
 
 def check_club_preview(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
+    page.route('**/api/public/welcome/**', lambda route: route.abort())
+    try:
+        page.goto(origin + 'club/')
+        thumbnails = page.locator('.club-preview img')
+        expect(thumbnails).to_have_count(3)
+        assert thumbnails.evaluate_all("""async images => {
+            await Promise.all(images.map(image => image.decode()));
+            return images.every(image => image.naturalWidth === 640 &&
+                image.naturalHeight === 640 && image.getBoundingClientRect().width >= 250);
+        }""")
+    finally:
+        page.unroute('**/api/public/welcome/**')
+
     def serve_preview(route):
         route.fulfill(path=Path(__file__).resolve().parents[1] / 'img' / 'favicon.png')
 
