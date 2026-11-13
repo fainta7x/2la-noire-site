@@ -111,6 +111,8 @@
       const block = make('details', undefined, 'result-block');
       block.append(make('summary', item.title + (item.date ? ' · ' + dateText(item.date, false, true) : '')),
         picture(item.image, 'Итоговая таблица турнира ' + item.title, () => table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], item.standings.map((row) => [row.place, row.name, row.points, row.wins, row.games]))));
+      // Nominations: who won what. If the card cannot be drawn (no nominations), it simply disappears.
+      if (item.nominations_image) block.append(picture(item.nominations_image, 'Номинации турнира ' + item.title, () => document.createComment('')));
       return block;
     }));
     tournaments.hidden = false;
