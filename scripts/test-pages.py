@@ -218,8 +218,21 @@ def check_cover_photos(page, origin):
     expect(second).to_have_attribute('aria-current', 'true')
     expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
     expect(second).to_be_focused()
-    # The photos also change by themselves (a short wait, the interval is a few seconds).
-    expect(photos.locator('.hero-slide.is-active img')).not_to_have_attribute('alt', 'Игроки слушают речь за столом', timeout=9000)
+    # This browser asks for reduced motion: the photos must stay where the visitor left them.
+    page.wait_for_timeout(7000)
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
+
+
+def check_auto_photos(browser, origin):
+    context = browser.new_context(viewport={'width': 1440, 'height': 900}, reduced_motion='no-preference')
+    context.add_init_script(INIT)
+    page = context.new_page()
+    page.goto(origin, wait_until='domcontentloaded')
+    photos = page.get_by_role('region', name='Фотографии клуба')
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки в масках за столом 2LA noire')
+    # The photos change by themselves (the interval is a few seconds).
+    expect(photos.locator('.hero-slide.is-active img')).not_to_have_attribute('alt', 'Игроки в масках за столом 2LA noire', timeout=9000)
+    context.close()
 
 
 def check_gallery(page, origin):
@@ -327,6 +340,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
         check_cover_photos(page, origin)
+        check_auto_photos(browser, origin)
         check_club_preview(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
