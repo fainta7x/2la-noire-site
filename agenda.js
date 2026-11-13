@@ -125,8 +125,13 @@
     seasons.replaceChildren(make('h2', 'Итоги сезонов'), ...items.map((item, index) => {
       const block = make('details', undefined, 'result-block');
       if (index === 0) block.open = true;
-      block.append(make('summary', item.title + (item.date_label ? ' · ' + item.date_label : '') + (item.current ? ' · идёт сейчас' : '')),
-        picture(item.image, 'Итоги сезона ' + item.title, () => table('Таблица сезона по Эло', ['Место', 'Игрок', 'Эло', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
+      block.append(make('summary', item.title + (item.current ? ' · идёт сейчас' : '')));
+      block.append(make('p', [item.date_label, item.games + ' игр', item.evenings + ' вечеров', item.players + ' игроков'].filter(Boolean).join(' · '), 'agenda-meta'));
+      if (item.leader) block.append(make('p', 'Лидер роста по Эло: ' + item.leader.nickname + ' (' + item.leader.value + ')'));
+      if (item.mvp) block.append(make('p', 'MVP сезона: ' + item.mvp.nickname + ' (' + item.mvp.value + ')'));
+      block.append(make('h3', 'Таблица сезона'),
+        picture(item.image, 'Топ-10 сезона ' + item.title, () => table('Топ-10 по изменению Эло', ['Место', 'Игрок', 'Эло', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
+      if (item.nominations_image) block.append(make('h3', 'Номинации сезона'), picture(item.nominations_image, 'Номинации сезона ' + item.title, () => document.createComment('')));
       return block;
     }));
     seasons.hidden = false;
