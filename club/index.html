@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/site.css">
   <script src="/welcome.js" defer></script>
   <script src="/account.js" defer></script>
+  <script src="/agenda.js" defer></script>
 </head>
 <body>
   <!-- include: header -->
@@ -20,18 +21,19 @@
         <div class="club-grid">
           <article>
             <h2>Клубные игры</h2>
-            <p>Ближайшие пятницы, запись и фото с прошедших вечеров.</p>
+            <p>Клубные партии по пятницам с 21:00 в кафе «Суп с котом».</p>
+            <div class="club-preview" id="club-evening" aria-live="polite"><p>Ближайшие даты и запись доступны в разделе клубных игр.</p></div>
             <a class="text-link" href="/klubnye-igry/">Посмотреть клубные игры <span aria-hidden="true">→</span></a>
           </article>
           <article>
             <h2>Рейтинг и сезоны</h2>
-            <p>Таблица игроков и как следить за своими результатами в течение сезона.</p>
+            <div class="club-preview" id="club-rating" aria-live="polite"><p>Рейтинг можно посмотреть в полной таблице.</p></div>
             <div><a class="text-link" href="/rating/">Клубный рейтинг <span aria-hidden="true">→</span></a></div>
             <div><a class="text-link" href="/sezony/">О рейтинговых сезонах <span aria-hidden="true">→</span></a></div>
           </article>
           <article>
             <h2>Турниры</h2>
-            <p>Что скоро играем и чем закончились прошлые турниры.</p>
+            <div class="club-preview" id="club-tournament" aria-live="polite"><p>Итоги и фотографии — в разделе турниров.</p></div>
             <a class="text-link" href="/turniry/">Посмотреть турниры <span aria-hidden="true">→</span></a>
           </article>
         </div>
