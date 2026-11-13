@@ -160,7 +160,7 @@ def check_layout(page, origin, width, height, snapshots=None):
         elif route:
             expect(page.locator('.main-nav [aria-current="page"]')).to_have_attribute('href', '/' + route)
         if route == 'club/':
-            expect(page.locator('.club-grid a')).to_have_count(4)
+            expect(page.locator('.club-grid a.text-link:not(.club-preview a)')).to_have_count(4)
             for destination in ('klubnye-igry', 'rating', 'sezony', 'turniry'):
                 expect(page.locator(f'.club-grid a[href="/{destination}/"]')).to_be_visible()
         if route == 'igry/':
