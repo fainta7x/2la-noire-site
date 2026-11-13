@@ -377,3 +377,38 @@ footer { border-top: 1px solid var(--line); }
 @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
 @media (max-width: 480px) { .hero { min-height: 480px; } }
 .hero-lead { text-wrap: balance; }
+
+/* Home: introduce the sport before inviting a new visitor to join. */
+.hero h1 { font-size: clamp(2.4rem, 7.7vw, 6.8rem); line-height: .96; letter-spacing: -.035em; }
+.hero-lead { max-width: 35ch; margin-top: clamp(22px, 3.2vw, 42px); font-size: clamp(1.3rem, 2.5vw, 2.05rem); font-weight: 640; letter-spacing: -.025em; }
+.hero-note { margin: 8px auto 0; color: #eee7f0d6; font-size: clamp(.88rem, 1.3vw, 1.03rem); }
+.hero-actions { margin-top: clamp(24px, 3.2vw, 42px); }
+.hero-slide::after { background: linear-gradient(180deg, #100d157a 0%, #100d15b5 52%, #100d15e8 100%); }
+.section-kicker { margin: 0 0 14px; color: var(--link); font-size: .78rem; letter-spacing: .15em; font-weight: 750; text-transform: uppercase; }
+.sport-intro { background: #16111d; }
+.sport-layout, .place-story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); align-items: center; gap: clamp(28px, 5vw, 88px); }
+.sport-layout h2, .place-story h2 { max-width: 13ch; }
+.sport-photo { margin: 0; overflow: hidden; border-radius: 22px; background: var(--surface); }
+.sport-photo img { width: 100%; height: clamp(300px, 36vw, 520px); object-fit: cover; }
+.sport-photo figcaption { padding: 10px 16px; font-size: .84rem; color: var(--muted); }
+.club-intro { max-width: 72ch; }
+.club-path-grid article { display: flex; flex-direction: column; align-items: flex-start; min-height: 285px; background: #21182c; }
+.club-path-grid article p { flex: 1; }
+.path-number { display: block; margin-bottom: 26px; color: var(--link); font-size: .85rem; font-weight: 750; letter-spacing: .1em; }
+.club-place { background: #151019; }
+.place-story > img { width: 100%; max-height: 520px; object-fit: cover; object-position: center 35%; border-radius: 22px; }
+.place-address { margin: 20px 0 8px; font-weight: 660; }
+.player-paths h3 { margin: 0; font-size: clamp(1.45rem, 3vw, 2.3rem); line-height: 1.1; letter-spacing: -.025em; }
+.player-paths .section-copy { margin-top: 16px; }
+.next-evening .section-kicker { margin-bottom: 10px; }
+@media (max-width: 760px) {
+  .sport-layout, .place-story { grid-template-columns: minmax(0, 1fr); }
+  .sport-photo img { height: auto; max-height: 390px; }
+  .place-story > img { max-height: 350px; }
+  .club-path-grid article { min-height: 0; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: clamp(2.3rem, 10.2vw, 3.8rem); }
+  .hero-note { max-width: 30ch; }
+  .sport-photo, .place-story > img { border-radius: 14px; }
+}
