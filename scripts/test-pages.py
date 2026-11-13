@@ -299,7 +299,10 @@ def check_club_preview(page, origin):
         page.unroute('**/api/public/welcome/**')
 
     def serve_preview(route):
-        route.fulfill(path=Path(__file__).resolve().parents[1] / 'img' / 'favicon.png')
+        # Serve an actual 640px result thumbnail, not an icon: image.decode()
+        # should exercise the same format used by the public preview.
+        result_image = Path(__file__).resolve().parents[1] / 'img' / 'club-results' / 'history-cbcb7301-8580-423a-bb5a-3d1733d7fbea.webp'
+        route.fulfill(path=result_image, content_type='image/webp')
 
     image_url = 'https://app.2lamafia.ru/img/favicon.png'
     page.route(image_url, serve_preview)
