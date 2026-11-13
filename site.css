@@ -412,3 +412,103 @@ footer { border-top: 1px solid var(--line); }
   .hero-note { max-width: 30ch; }
   .sport-photo, .place-story > img { border-radius: 14px; }
 }
+
+/* Editorial homepage, 2026. Chapter links are always ordinary anchors if JS is unavailable. */
+.chapter-nav { position: sticky; top: 74px; z-index: 9; background: #15101ded; border-block: 1px solid #ffffff1b; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+.chapter-nav-inner { width: 100%; max-width: 1380px; margin: 0 auto; padding: 0 var(--gutter); min-height: 58px; display: flex; align-items: center; gap: clamp(8px, 2.4vw, 35px); overflow-x: auto; scrollbar-width: none; }
+.chapter-nav-inner::-webkit-scrollbar { display: none; }
+.chapter-nav-inner a { position: relative; display: inline-flex; align-items: center; min-height: 48px; white-space: nowrap; color: #d1c7d8; font-size: .84rem; font-weight: 650; }
+.chapter-nav-inner a[aria-current="location"] { color: #fff; }
+.chapter-nav-inner a[aria-current="location"]::after { content:""; height: 2px; position: absolute; inset: auto 0 0; background: var(--link); }
+.chapter-nav-brand { color: var(--link); font-size: .77rem; font-weight: 800; letter-spacing: .13em; flex-shrink: 0; }
+.chapter-nav-inner .chapter-nav-join { margin-left: auto; color: var(--link); }
+.chapter-progress { position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; transform: scaleX(0); transform-origin: left; background: var(--link); pointer-events: none; }
+#about,#sport,#whats-next,#club-place,#newcomers,#schedule { scroll-margin-top: 156px; }
+.hero .eyebrow { letter-spacing: .24em; }
+.hero h1 { font-weight: 800; text-shadow: 0 7px 50px #0603098f; }
+.hero .primary-button { border-radius: 100px; padding-inline: 26px; }
+.hero-photo-link { letter-spacing: .03em; }
+.section:not(.next-evening) { padding-block: clamp(76px, 9.2vw, 148px); }
+.section h2 { text-wrap: pretty; }
+.game-intro { background: #110e16; }
+.game-intro h2 { color: var(--text); }
+.about-layout { align-items: start; grid-template-columns: minmax(0, .92fr) minmax(0, 1fr); gap: clamp(30px, 7vw, 130px); }
+.intro-sticky { position: sticky; top: 185px; }
+.intro-sticky .section-copy { max-width: 45ch; }
+.intro-image { position: relative; overflow: hidden; border-radius: 8px; margin-bottom: 45px; height: clamp(290px, 37vw, 510px); }
+.intro-image img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.intro-image::after { content: ""; position: absolute; inset: 45% 0 0; background: linear-gradient(transparent,#100d15a8); pointer-events:none; }
+.intro-image span { position: absolute; left: 22px; bottom: 20px; z-index: 1; color: white; font-size: .84rem; font-weight: 700; }
+.audience h3 { margin-bottom: 20px; font-size: 1.35rem; letter-spacing: -.03em; }
+.game-stages { gap: 0; margin: 0; }
+.game-stages li { padding: 20px 0 22px; border-left: 0; border-top: 1px solid #ffffff3b; display: grid; grid-template-columns: minmax(120px,.42fr) 1fr; gap: 18px; }
+.game-stages li::before { content: none; }
+.game-stages strong { color: var(--link); font-size: .88rem; }
+.game-stages span { font-size: 1rem; }
+.sport-intro { background: #211726; }
+.sport-layout { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.sport-photo { border-radius: 7px; transform: rotate(-1.2deg); }
+.sport-photo img { height: clamp(390px, 43vw, 630px); }
+.club-section { background: #110e16; }
+.journey-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(26px, 6.5vw, 110px); margin-top: 58px; }
+.journey-visual { position: sticky; top: 174px; height: min(64vh, 640px); min-height: 360px; overflow: hidden; border-radius: 8px; }
+.journey-visual img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.journey-visual::after { content: ""; position: absolute; inset: 50% 0 0; background: linear-gradient(transparent, #100d15b7); }
+.journey-visual span { position: absolute; z-index: 1; bottom: 24px; left: 24px; font-size: .94rem; font-weight: 660; }
+.club-path-grid { display: block; margin: 0; }
+.club-path-grid article { min-height: 0; border: 0; border-top: 1px solid #ffffff43; border-radius: 0; padding: 33px 0 42px; background: none; }
+.club-path-grid article:last-child { border-bottom: 1px solid #ffffff43; }
+.club-path-grid article h3 { font-size: clamp(1.8rem, 3vw, 3rem); letter-spacing: -.04em; }
+.club-path-grid article p { max-width: 40ch; }
+.path-number { margin-bottom: 20px; }
+.club-place { background: #211726; }
+.place-story { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); }
+.place-story > img { max-height: 670px; border-radius: 7px; }
+.first-visit { background: #120e18; }
+.player-paths > div { border-radius: 8px; border: 1px solid #ffffff28; background: #251a2e; }
+.player-paths > div:first-child { background: linear-gradient(140deg, #32213e, #1c1524); }
+.player-paths .secondary-button { border-radius: 100px; }
+.next-evening { background: #5b3893; border: 0; }
+.next-evening .section-kicker, .next-evening-date { color: #f1d6ff; }
+.next-evening .primary-button { border-radius: 100px; background: #fff; color: #24142e; box-shadow: none; }
+.next-evening .primary-button:hover { background: #f3e8ff; }
+.home-gallery { background: #100d15; }
+.editorial-gallery { grid-template-columns: 1fr .83fr 1fr; gap: clamp(10px,2vw,26px); }
+.editorial-gallery .photo-preview { border-radius: 7px; aspect-ratio: 3/4; }
+.editorial-gallery .photo-preview:nth-child(2) { transform: translateY(40px); }
+.editorial-gallery .photo-preview img { transition: transform .65s ease; }
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .editorial-gallery .photo-preview:hover img { transform: scale(1.045); }
+}
+@media (min-width:1241px) { .site-header { z-index: 11; } }
+@media (max-width:1240px) { .chapter-nav { top: 0; } }
+@media (max-width:900px) {
+  .about-layout, .sport-layout, .place-story { grid-template-columns: 1fr; }
+  .intro-sticky, .journey-visual { position: static; }
+  .journey-layout { grid-template-columns: 1fr; margin-top: 35px; }
+  .journey-visual { height: 330px; min-height: 0; }
+  .sport-photo { transform: none; }
+  .sport-photo img { height: 370px; }
+  .game-stages li { grid-template-columns: minmax(115px,.35fr) 1fr; }
+}
+@media (max-width:760px) {
+  .chapter-nav-inner { padding-inline: 14px; gap: 20px; }
+  .chapter-nav-brand { display: none; }
+  .chapter-nav-inner a { min-height: 50px; }
+  .chapter-nav-inner .chapter-nav-join { margin-left: 0; }
+  .section:not(.next-evening) { padding-block: 70px; }
+  .intro-image { height: 300px; margin-bottom: 30px; }
+  .club-path-grid article { padding: 25px 0 33px; }
+  .journey-visual { height: 260px; }
+  .editorial-gallery { grid-auto-columns: 79%; }
+  .editorial-gallery .photo-preview:nth-child(2) { transform: none; }
+  #about,#sport,#whats-next,#club-place,#newcomers,#schedule { scroll-margin-top: 74px; }
+}
+@media (max-width:390px) {
+  .game-stages li { grid-template-columns: 1fr; gap: 5px; }
+  .next-evening .primary-button { max-width: 100%; font-size: .84rem; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .sport-photo,.editorial-gallery .photo-preview:nth-child(2) { transform: none; }
+  .editorial-gallery .photo-preview img { transition: none; }
+}
