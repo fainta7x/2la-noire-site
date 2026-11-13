@@ -6,7 +6,8 @@ import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html', 'klubnye-igry/index.html', 'sezony/index.html', 'turniry/index.html', 'blog/index.html')
+PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html', 'klubnye-igry/index.html', 'sezony/index.html', 'turniry/index.html', 'blog/index.html', 'club/index.html')
+CLUB_PAGES = ('/klubnye-igry/', '/rating/', '/sezony/', '/turniry/')
 STYLES = ('site.css', 'join.css', 'pages.css')
 SCRIPTS = ('welcome.js', 'join.js', 'cms.js', 'account.js', 'gallery.js', 'home.js', 'agenda.js')
 LEGACY = (*STYLES, 'welcome.js', 'join.js', 'cms.js', 'account.js')
@@ -31,7 +32,10 @@ def build_page(path):
     for name in ('header', 'footer'):
         fragment = (ROOT / 'includes' / f'{name}.html').read_text(encoding='utf-8').strip()
         if name == 'header' and route != '/':
-            fragment = fragment.replace(f'href="{route}"', f'href="{route}" aria-current="page"')
+            if route in CLUB_PAGES:
+                fragment = fragment.replace('href="/club/"', 'href="/club/" aria-current="location"')
+            else:
+                fragment = fragment.replace(f'href="{route}"', f'href="{route}" aria-current="page"')
         marker = f'<!-- include: {name} -->'
         if html.count(marker) != 1:
             raise ValueError(f'Expected one {name} marker in {path}')

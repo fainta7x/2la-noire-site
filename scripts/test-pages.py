@@ -18,6 +18,7 @@ VIEWPORTS = [
     (1891, 933), (1920, 1080), (2560, 1440),
 ]
 PAGES = {
+    'club/': 'Клуб 2LA noire',
     'klubnye-igry/': 'Регулярные игры',
     'sezony/': 'Рейтинговые сезоны',
     'turniry/': 'Турниры',
@@ -136,8 +137,14 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert typography['headerGap'] <= 1, f'Header alignment at /{route}, {width}: {typography}'
         assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
         assert page.locator('.skip-link').bounding_box()['y'] < 0, f'Skip link visible at /{route}, {width}'
-        if route:
+        if route in ('klubnye-igry/', 'rating/', 'sezony/', 'turniry/'):
+            expect(page.locator('.main-nav [aria-current="location"]')).to_have_attribute('href', '/club/')
+        elif route:
             expect(page.locator('.main-nav [aria-current="page"]')).to_have_attribute('href', '/' + route)
+        if route == 'club/':
+            expect(page.locator('.club-grid a')).to_have_count(4)
+            for destination in ('klubnye-igry', 'rating', 'sezony', 'turniry'):
+                expect(page.locator(f'.club-grid a[href="/{destination}/"]')).to_be_visible()
         if route == 'igry/':
             expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
         if route == 'rating/':
@@ -237,7 +244,8 @@ def check_form(page, origin, server):
     page.get_by_role('button', name='Записаться на игру').click()
     expect(page.locator('#join-result')).to_contain_text('Ты в списке · Пятница, 20 ноября')
     assert server.submissions[-1]['evening_id'] == 'e20'
-    page.get_by_role('link', name='Рейтинг', exact=True).click()
+    page.get_by_role('navigation', name='Основная навигация').get_by_role('link', name='Клуб', exact=True).click()
+    page.get_by_role('link', name='Клубный рейтинг', exact=True).click()
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_hidden()
     page.get_by_role('button', name='Показать всех игроков (7)').click()
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
@@ -269,7 +277,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         check_form(page, origin, server)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'
         assert not errors, errors
-    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes × 6 pages, fresh and old cache, gallery, sign-up, rating', flush=True)
+    print(f'{browser_type.name}: {len(VIEWPORTS)} sizes × {len(PAGES)} pages, fresh and old cache, gallery, sign-up, rating', flush=True)
 
 
 def main():
