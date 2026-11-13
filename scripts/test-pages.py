@@ -299,7 +299,10 @@ def check_club_preview(page, origin):
         page.unroute('**/api/public/welcome/**')
 
     def serve_preview(route):
-        route.fulfill(path=Path(__file__).resolve().parents[1] / 'img' / 'favicon.png')
+        # Serve an actual 640px result thumbnail, not an icon: image.decode()
+        # should exercise the same format used by the public preview.
+        result_image = Path(__file__).resolve().parents[1] / 'img' / 'club-results' / 'history-cbcb7301-8580-423a-bb5a-3d1733d7fbea.webp'
+        route.fulfill(path=result_image, content_type='image/webp')
 
     image_url = 'https://app.2lamafia.ru/img/favicon.png'
     page.route(image_url, serve_preview)
@@ -310,6 +313,12 @@ def check_club_preview(page, origin):
             expect(preview.locator('a.result-picture')).to_have_attribute('href', image_url)
             image = preview.locator('img')
             expect(image).to_be_visible()
+            # The result picture loads lazily: bring it into view and wait until it has loaded before decoding
+            # (a lazy picture that is still off screen makes decode() fail in some browsers).
+            image.scroll_into_view_if_needed()
+            page.wait_for_function(
+                "(selector) => { const img = document.querySelector(selector + ' img'); return Boolean(img && img.complete && img.naturalWidth > 0); }",
+                arg=selector, timeout=10000)
             assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
         expect(page.locator('#club-rating svg')).to_have_attribute('aria-label', re.compile('Игрок 1 — 1599 Elo'))
         expect(page.locator('#club-rating .result-picture')).to_have_attribute('href', '/rating/')

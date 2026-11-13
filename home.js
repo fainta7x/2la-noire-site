@@ -32,4 +32,36 @@
   document.addEventListener('visibilitychange', start);
   reduceMotion.addEventListener('change', start);
   start();
+
+  const chapterLinks = Array.from(document.querySelectorAll('.chapter-nav a[href^="#"]'));
+  const chapterSections = chapterLinks.map((link) => ({
+    link, section: document.querySelector(link.getAttribute('href'))
+  })).filter(({ section }) => section);
+  const progress = document.querySelector('.chapter-progress');
+  let scrollPending = false;
+  const updateChapter = () => {
+    scrollPending = false;
+    const offset = window.innerHeight * .35;
+    let active = null;
+    for (const item of chapterSections) {
+      if (item.section.getBoundingClientRect().top <= offset) active = item;
+    }
+    chapterLinks.forEach((link) => {
+      if (active?.link === link) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+    if (progress) {
+      const available = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const fraction = Math.min(1, Math.max(0, window.scrollY / available));
+      progress.style.transform = 'scaleX(' + fraction + ')';
+    }
+  };
+  const scheduleScroll = () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    window.requestAnimationFrame(updateChapter);
+  };
+  window.addEventListener('scroll', scheduleScroll, { passive: true });
+  window.addEventListener('resize', scheduleScroll, { passive: true });
+  updateChapter();
 })();
