@@ -45,6 +45,23 @@
     return node;
   };
 
+  const picture = (path, alt, fallback) => {
+    const url = safeLink(path, new URL(app).origin);
+    if (!url) return fallback();
+    const link = make('a', undefined, 'result-picture');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    const image = make('img');
+    image.alt = alt;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.addEventListener('error', () => link.replaceWith(fallback()), { once: true });
+    image.src = url;
+    link.append(image);
+    return link;
+  };
+
   const tournaments = document.getElementById('tournament-results');
   if (tournaments) read('/tournaments').then((data) => {
     const items = Array.isArray(data.tournaments) ? data.tournaments : [];
@@ -52,7 +69,7 @@
     tournaments.replaceChildren(make('h2', 'Итоги прошедших турниров'), ...items.map((item) => {
       const block = make('details', undefined, 'result-block');
       block.append(make('summary', item.title + (item.date ? ' · ' + dateText(item.date, false, true) : '')),
-        table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], item.standings.map((row) => [row.place, row.name, row.points, row.wins, row.games])));
+        picture(item.image, 'Итоговая таблица турнира ' + item.title, () => table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], item.standings.map((row) => [row.place, row.name, row.points, row.wins, row.games]))));
       return block;
     }));
     tournaments.hidden = false;
@@ -65,7 +82,10 @@
     history.replaceChildren(make('h2', 'Как прошли последние вечера'), ...items.map((item) => {
       const block = make('article', undefined, 'result-block');
       block.append(make('h3', dateText(item.starts_at, false, true)), make('p', item.format_label + ' · игр: ' + item.games + ' · игроков: ' + item.players + ' · победы красных: ' + item.red_wins + ', чёрных: ' + item.black_wins, 'agenda-meta'));
-      if (item.most_wins.length) block.append(make('p', 'Больше всех побед: ' + item.most_wins.map((entry) => entry.nickname + ' (' + entry.value + ')').join(', ')));
+      block.append(picture(item.image, 'Итоги вечера ' + dateText(item.starts_at), () => {
+        const text = make('p', item.most_wins.length ? 'Больше всех побед: ' + item.most_wins.map((entry) => entry.nickname + ' (' + entry.value + ')').join(', ') : '');
+        return text;
+      }));
       return block;
     }));
     history.hidden = false;
