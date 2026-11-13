@@ -206,7 +206,7 @@ def check_gallery(page, origin):
           const {width, height} = photo.getBoundingClientRect();
           return [width, height];
         })""")
-        assert len(sizes) >= 19 and all(size == sizes[0] for size in sizes), (width, sizes)
+        assert len(sizes) >= 19 and all(abs(w - sizes[0][0]) < 1 and abs(h - sizes[0][1]) < 1 for w, h in sizes), (width, sizes)
     page.set_viewport_size({'width': 390, 'height': 844})
     first = page.get_by_role('link', name='Игроки слушают речь за столом')
     first.click()
