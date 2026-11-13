@@ -244,7 +244,7 @@ def check_form(page, origin, server):
     page.get_by_label('Имя пользователя в Telegram').fill('@test_username')
     page.get_by_role('radio', name='Пятница, 20 ноября').focus()
     page.keyboard.press('Space')
-    expect(page.get_by_role('heading', name='Пятница, 20 ноября')).to_be_visible()
+    expect(page.locator('#join-evening').get_by_role('heading', name='Пятница, 20 ноября', exact=True)).to_be_visible()
     page.get_by_role('radio', name='Телефон').focus()
     page.keyboard.press('Space')
     expect(page.get_by_label('Номер телефона')).to_be_visible()
