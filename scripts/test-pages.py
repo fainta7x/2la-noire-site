@@ -313,6 +313,12 @@ def check_club_preview(page, origin):
             expect(preview.locator('a.result-picture')).to_have_attribute('href', image_url)
             image = preview.locator('img')
             expect(image).to_be_visible()
+            # The result picture loads lazily: bring it into view and wait until it has loaded before decoding
+            # (a lazy picture that is still off screen makes decode() fail in some browsers).
+            image.scroll_into_view_if_needed()
+            page.wait_for_function(
+                "(selector) => { const img = document.querySelector(selector + ' img'); return Boolean(img && img.complete && img.naturalWidth > 0); }",
+                arg=selector, timeout=10000)
             assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
         expect(page.locator('#club-rating svg')).to_have_attribute('aria-label', re.compile('Игрок 1 — 1599 Elo'))
         expect(page.locator('#club-rating .result-picture')).to_have_attribute('href', '/rating/')
