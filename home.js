@@ -64,4 +64,92 @@
   window.addEventListener('scroll', scheduleScroll, { passive: true });
   window.addEventListener('resize', scheduleScroll, { passive: true });
   updateChapter();
+
+  // Progressive disclosure: nothing is hidden until the observer has been installed.
+  // IntersectionObserver avoids per-element scroll listeners and does not affect link navigation.
+  const motionItems = [];
+  document.querySelectorAll('[data-motion-section]').forEach((section) => {
+    const candidates = [
+      section.querySelector('.section-kicker'),
+      section.querySelector('h2'),
+      section.querySelector('.section-copy'),
+      section.querySelector('.intro-image'),
+      section.querySelector('.sport-photo'),
+      section.querySelector('.journey-visual'),
+      section.querySelector('.place-story > img'),
+      ...section.querySelectorAll('.club-path-grid article, .player-paths > div, .editorial-gallery .photo-preview')
+    ].filter(Boolean);
+    candidates.forEach((node, index) => {
+      node.classList.add('motion-enter');
+      node.style.setProperty('--enter-delay', Math.min(index, 3) * 75 + 'ms');
+      motionItems.push(node);
+    });
+  });
+
+  if (!reduceMotion.matches && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.add('motion-visible');
+        observer.unobserve(entry.target);
+      }
+    }, { rootMargin: '0px 0px 32px 0px', threshold: 0.08 });
+    motionItems.forEach((node) => observer.observe(node));
+    document.body.classList.add('motion-enabled');
+    // Also reveal everything in-page when returning via browser history.
+    motionItems.filter((node) => node.getBoundingClientRect().top < innerHeight &&
+      node.getBoundingClientRect().bottom > 0).forEach((node) => node.classList.add('motion-visible'));
+  } else {
+    motionItems.forEach((node) => node.classList.add('motion-visible'));
+  }
+
+  // An active stage follows the reading position: the layout stays stable
+  // and content remains readable before, during, and after the animation.
+  const makeActive = (selector, itemSelector) => {
+    const root = document.querySelector(selector);
+    if (!root) return () => {};
+    const items = Array.from(root.querySelectorAll(itemSelector));
+    return () => {
+      const point = innerHeight * .65;
+      let index = 0;
+      items.forEach((item, i) => {
+        if (item.getBoundingClientRect().top < point) index = i;
+      });
+      items.forEach((item, i) => item.classList.toggle('is-current', i === index));
+    };
+  };
+  const highlightSteps = makeActive('[data-game-steps]', 'li');
+  const highlightJourney = makeActive('[data-journey]', 'article');
+  const motionPhotos = Array.from(document.querySelectorAll('.motion-photo, .motion-place-photo'));
+  let motionFrame = false;
+  const syncMotion = () => {
+    motionFrame = false;
+    highlightSteps();
+    highlightJourney();
+    if (reduceMotion.matches) {
+      motionPhotos.forEach((node) => node.style.removeProperty('--photo-shift'));
+      return;
+    }
+    // Small bounded image-only parallax: no layout or hit-target movement.
+    for (const wrapper of motionPhotos) {
+      const rect = wrapper.getBoundingClientRect();
+      const shift = Math.max(-24, Math.min(24, (innerHeight / 2 - (rect.top + rect.height / 2)) * .055));
+      wrapper.style.setProperty('--photo-shift', shift.toFixed(1) + 'px');
+    }
+  };
+  const requestMotion = () => {
+    if (motionFrame) return;
+    motionFrame = true;
+    requestAnimationFrame(syncMotion);
+  };
+  window.addEventListener('scroll', requestMotion, { passive: true });
+  window.addEventListener('resize', requestMotion, { passive: true });
+  reduceMotion.addEventListener('change', () => {
+    if (reduceMotion.matches) {
+      document.body.classList.remove('motion-enabled');
+      motionItems.forEach((node) => node.classList.add('motion-visible'));
+    }
+    requestMotion();
+  });
+  syncMotion();
 })();
