@@ -568,3 +568,26 @@ footer { border-top: 1px solid var(--line); }
   [data-game-steps] li, [data-game-steps] li::after, [data-journey] article,
   .motion-photo img, .motion-place-photo { transition: none !important; transform: none !important; }
 }
+
+/* Editorial story imagery: distinct photographs for the three player stages. */
+.journey-visual .journey-photo-stack { position: absolute; inset: 0; overflow: hidden; }
+.journey-visual .journey-photo-stack .journey-shot {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 40%;
+  opacity: 0; pointer-events: none;
+  transition: opacity .7s ease, transform .7s ease;
+}
+.journey-visual .journey-photo-stack .journey-shot:first-child { object-position: center 36%; }
+.journey-visual .journey-photo-stack .journey-shot:last-child { object-position: center; }
+.journey-visual .journey-photo-stack .journey-shot.is-active { opacity: 1; }
+.journey-visual .journey-caption { font-size: clamp(1rem, 1.6vw, 1.4rem); font-weight: 740; bottom: 25px; }
+.journey-visual .journey-counter { position: absolute; top: 20px; right: 22px; z-index: 3; font-size: .78rem; font-weight: 760; color: #f4e8ff; letter-spacing: .12em; }
+.motion-enabled .journey-visual .journey-photo-stack .journey-shot {
+  transform: translate3d(0, var(--photo-shift, 0px), 0) scale(1.09);
+}
+@media (prefers-reduced-motion: reduce) {
+  .journey-visual .journey-photo-stack .journey-shot { transition: none; transform: none !important; }
+}
+
+/* The fixed story image is decorative and must never block header/navigation clicks. */
+.journey-visual { pointer-events: none; }
