@@ -327,6 +327,7 @@ footer { border-top: 1px solid var(--line); }
 .section .landing-section-title { margin-bottom: 22px; }
 .club-feature { position: relative; margin: clamp(22px, 4vw, 44px) 0 0; overflow: hidden; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); }
 .club-feature img { width: 100%; height: auto; max-height: 520px; object-fit: cover; object-position: center 58%; }
+.club-feature-full img { max-height: none; }
 .club-feature figcaption { padding: 9px 16px; color: var(--muted); font-size: .9rem; }
 @media (max-width: 540px) {
   .club-feature { border-radius: 14px; }
