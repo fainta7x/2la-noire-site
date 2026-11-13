@@ -64,7 +64,7 @@ img { display: block; max-width: 100%; }
 .main-nav a:hover, .footer-inner nav a:hover { color: var(--text); text-decoration: underline; text-underline-offset: .25em; }
 .header-cta, .account a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 13px; border: 1px solid var(--line); border-radius: 8px; font-weight: 680; font-size: .86rem; white-space: nowrap; }
 .header-cta { color: var(--violet-light); border-color: #56387b; background: #29183e; }
-.main-nav a[aria-current="page"] { color: var(--text); text-decoration: underline; text-underline-offset: .28em; }
+.main-nav a[aria-current] { color: var(--text); text-decoration: underline; text-underline-offset: .28em; }
 .account { gap: 8px; }
 .account a:hover, .header-cta:hover { border-color: var(--accent); }
 
