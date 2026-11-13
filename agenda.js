@@ -154,7 +154,7 @@
     tournaments.replaceChildren(make('h2', 'Итоги прошедших турниров'), ...items.map((item) => {
       const block = make('details', undefined, 'result-block');
       block.append(make('summary', item.title + (item.date ? ' · ' + dateText(item.date, false, true) : '')),
-        picture(item.image, 'Итоговая таблица турнира ' + item.title, () => table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], item.standings.map((row) => [row.place, row.name, row.points, row.wins, row.games]))));
+        picture(item.image, 'Итоговая таблица турнира ' + item.title, () => table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], (item.standings || []).map((row) => [row.place, row.name, row.points, row.wins, row.games]))));
       // Nominations: who won what. If the card cannot be drawn (no nominations), it simply disappears.
       if (item.nominations_image) block.append(picture(item.nominations_image, 'Номинации турнира ' + item.title, () => document.createComment('')));
       return block;
@@ -174,7 +174,7 @@
       if (item.leader) block.append(make('p', 'Лидер роста по Эло: ' + item.leader.nickname + ' (' + item.leader.value + ')'));
       if (item.mvp) block.append(make('p', 'MVP сезона: ' + item.mvp.nickname + ' (' + item.mvp.value + ')'));
       block.append(make('h3', 'Таблица сезона'),
-        picture(item.image, 'Топ-10 сезона ' + item.title, () => table('Топ-10 по изменению Эло', ['Место', 'Игрок', 'Эло', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
+        picture(item.image, 'Топ-10 сезона ' + item.title, () => table('Топ-10 по изменению Эло', ['Место', 'Игрок', 'Эло', 'Игры'], (item.rows || []).map((row) => [row.place, row.nickname, row.value, row.detail]))));
       if (item.nominations_image) block.append(make('h3', 'Номинации сезона'), picture(item.nominations_image, 'Номинации сезона ' + item.title, () => document.createComment('')));
       return block;
     }));
@@ -189,7 +189,7 @@
       const block = make('article', undefined, 'result-block');
       block.append(make('h3', dateText(item.starts_at, false, true)), make('p', item.format_label + ' · игр: ' + item.games + ' · игроков: ' + item.players + ' · победы красных: ' + item.red_wins + ', чёрных: ' + item.black_wins, 'agenda-meta'));
       block.append(picture(item.image, 'Итоги вечера ' + dateText(item.starts_at), () => {
-        const text = make('p', item.most_wins.length ? 'Больше всех побед: ' + item.most_wins.map((entry) => entry.nickname + ' (' + entry.value + ')').join(', ') : '');
+        const text = make('p', (item.most_wins || []).length ? 'Больше всех побед: ' + item.most_wins.map((entry) => entry.nickname + ' (' + entry.value + ')').join(', ') : '');
         return text;
       }));
       return block;

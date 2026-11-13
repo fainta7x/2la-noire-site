@@ -30,40 +30,33 @@
   <!-- include: header -->
   <main id="content">
     <section class="hero">
+      <div class="hero-visual" id="hero-photos" role="region" aria-label="Фотографии клуба">
+        <figure class="hero-slide is-active">
+          <img src="/img/evenings/night.webp" srcset="/img/evenings/night-640.webp 640w, /img/evenings/night.webp 1280w" sizes="(max-width: 1380px) 90vw, 1268px" alt="Игроки в масках за столом 2LA noire" width="1280" height="960" fetchpriority="high">
+        </figure>
+        <figure class="hero-slide">
+          <img src="/img/evenings/discussion.webp" alt="Игроки слушают речь за столом" width="960" height="1280" loading="lazy" decoding="async">
+        </figure>
+        <figure class="hero-slide">
+          <img src="/img/evenings/players.webp" alt="Участники игрового вечера 2LA noire" width="960" height="1280" loading="lazy" decoding="async">
+        </figure>
+        <figure class="hero-slide">
+          <img src="/img/evenings/table.webp" alt="Игровой стол в кафе «Суп с котом»" width="960" height="1280" loading="lazy" decoding="async">
+        </figure>
+      </div>
       <div class="section-inner hero-layout">
         <div class="hero-copy">
           <p class="eyebrow">Клуб 2LA noire</p>
           <h1>Спортивная<br>мафия <span>в&nbsp;Туле</span></h1>
-          <p class="hero-lead">Приходи поиграть с нами. Если это твоя первая игра, объясним правила на месте.</p>
+          <p class="hero-lead">Десять человек за столом, у каждого своя роль. Кто-то врёт, кто-то ищет правду. Приходи в пятницу, правила объясним.</p>
           <div class="hero-actions">
-            <a class="primary-button" href="/igry/#join">Записаться на игру <span class="button-arrow" aria-hidden="true">→</span></a>
-            <a class="secondary-button" href="/novichkam/">Первый раз играю</a>
-            <div class="hero-scroll-row"><a class="hero-scroll" href="#about">Узнать об игре <span aria-hidden="true">↓</span></a></div>
+            <a class="primary-button" href="#about">Узнать об игре <span class="button-arrow" aria-hidden="true">↓</span></a>
           </div>
         </div>
-        <div class="hero-visual" id="hero-photos" role="region" aria-label="Фотографии клуба">
-          <figure class="hero-slide">
-            <img src="/img/evenings/night.webp" srcset="/img/evenings/night-640.webp 640w, /img/evenings/night.webp 1280w" sizes="(max-width: 1380px) 90vw, 1268px" alt="Игроки в масках за столом 2LA noire" width="1280" height="960" fetchpriority="high">
-          </figure>
-          <figure class="hero-slide" hidden>
-            <img src="/img/evenings/discussion.webp" alt="Игроки слушают речь за столом" width="960" height="1280" loading="lazy" decoding="async">
-          </figure>
-          <figure class="hero-slide" hidden>
-            <img src="/img/evenings/players.webp" alt="Участники игрового вечера 2LA noire" width="960" height="1280" loading="lazy" decoding="async">
-          </figure>
-          <figure class="hero-slide" hidden>
-            <img src="/img/evenings/table.webp" alt="Игровой стол в кафе «Суп с котом»" width="960" height="1280" loading="lazy" decoding="async">
-          </figure>
-          <div class="hero-photo-bar">
-            <a href="/foto/">Фото с игр <span aria-hidden="true">↗</span></a>
-            
-            <div class="hero-photo-controls" hidden>
-              <button type="button" aria-label="Предыдущий кадр" aria-controls="hero-photos">←</button>
-              <span class="hero-photo-count" aria-live="polite" aria-atomic="true"></span>
-              <button type="button" aria-label="Следующий кадр" aria-controls="hero-photos">→</button>
-            </div>
-          </div>
-        </div>
+      </div>
+      <div class="hero-footer">
+        <a class="hero-photo-link" href="/foto/">Фото с игр <span aria-hidden="true">↗</span></a>
+        <div class="hero-dots" role="group" aria-label="Смена фото" aria-controls="hero-photos"><button type="button" aria-label="Фото 1 из 4" aria-current="true"></button><button type="button" aria-label="Фото 2 из 4"></button><button type="button" aria-label="Фото 3 из 4"></button><button type="button" aria-label="Фото 4 из 4"></button></div>
       </div>
     </section>
     <section class="section game-intro" id="about">

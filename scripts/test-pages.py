@@ -173,8 +173,8 @@ def check_layout(page, origin, width, height, snapshots=None):
                             type='jpeg', quality=84, animations='disabled')
         if route:
             continue
-        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
-        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
+        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
+        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
         cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
@@ -183,7 +183,8 @@ def check_layout(page, origin, width, height, snapshots=None):
             const range = document.createRange();
             range.selectNodeContents(document.querySelector('.hero h1'));
             return {
-              hero: rect('.hero-copy'), figure: rect('.hero-visual'), title: range.getBoundingClientRect().toJSON(),
+              hero: rect('.hero-copy'), figure: rect('.hero-visual'), banner: rect('.hero'), title: range.getBoundingClientRect().toJSON(),
+              viewport: window.innerWidth,
               background: getComputedStyle(document.querySelector('.hero-visual')).backgroundImage,
               old: getComputedStyle(document.body).getPropertyValue('--old-site')
             };
@@ -191,10 +192,12 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert not layout['old'] and 'hero-table' not in layout['background']
         assert layout['title']['left'] >= layout['hero']['left'] - 1, f'Headline overflow at {width}: {layout}'
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
+        # The photo is a full-width banner behind the copy, not a framed card.
+        assert abs(layout['figure']['left']) <= 1 and layout['figure']['right'] >= layout['viewport'] - 18, f'Hero photo is not full width at {width}: {layout}'
         assert layout['hero']['top'] >= layout['figure']['top'] and layout['hero']['bottom'] <= layout['figure']['bottom'], f'Hero copy outside photo at {width}'
         copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
         photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
-        assert abs(copy_center - photo_center) <= 1, f'Hero misaligned at {width}: {layout}'
+        assert abs(copy_center - photo_center) <= 12, f'Hero misaligned at {width}: {layout}'
         if snapshots and width in (390, 1891):
             gallery = page.locator('.home-gallery')
             gallery.scroll_into_view_if_needed()
@@ -206,19 +209,30 @@ def check_cover_photos(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin, wait_until='domcontentloaded')
     photos = page.get_by_role('region', name='Фотографии клуба')
-    count = photos.locator('.hero-photo-count')
-    next_photo = photos.get_by_role('button', name='Следующий кадр')
-    expect(count).to_have_text('1 / 4')
-    next_photo.focus()
+    dots = page.get_by_role('group', name='Смена фото')
+    expect(photos.locator('.hero-slide.is-active')).to_have_count(1)
+    expect(dots.get_by_role('button', name='Фото 1 из 4')).to_have_attribute('aria-current', 'true')
+    second = dots.get_by_role('button', name='Фото 2 из 4')
+    second.focus()
     page.keyboard.press('Enter')
-    expect(count).to_have_text('2 / 4')
-    expect(photos.get_by_role('img', name='Игроки слушают речь за столом')).to_be_visible()
-    expect(next_photo).to_be_focused()
-    photos.get_by_role('button', name='Предыдущий кадр').click()
-    photos.get_by_role('button', name='Предыдущий кадр').click()
-    expect(count).to_have_text('4 / 4')
-    expect(photos.locator('.hero-slide:visible')).to_have_count(1)
-    assert photos.locator('.hero-slide:visible img').evaluate('(img) => getComputedStyle(img).animationName') == 'none'
+    expect(second).to_have_attribute('aria-current', 'true')
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
+    expect(second).to_be_focused()
+    # This browser asks for reduced motion: the photos must stay where the visitor left them.
+    page.wait_for_timeout(7000)
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
+
+
+def check_auto_photos(browser, origin):
+    context = browser.new_context(viewport={'width': 1440, 'height': 900}, reduced_motion='no-preference')
+    context.add_init_script(INIT)
+    page = context.new_page()
+    page.goto(origin, wait_until='domcontentloaded')
+    photos = page.get_by_role('region', name='Фотографии клуба')
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки в масках за столом 2LA noire')
+    # The photos change by themselves (the interval is a few seconds).
+    expect(photos.locator('.hero-slide.is-active img')).not_to_have_attribute('alt', 'Игроки в масках за столом 2LA noire', timeout=9000)
+    context.close()
 
 
 def check_gallery(page, origin):
@@ -247,7 +261,7 @@ def check_gallery(page, origin):
 
 def check_form(page, origin, server):
     page.goto(origin, wait_until='domcontentloaded')
-    page.get_by_role('link', name='Записаться на игру', exact=True).click()
+    page.locator('.main-nav').get_by_role('link', name='Запись на игру', exact=True).click()
     page.get_by_label('Имя', exact=True).fill('Тест формы')
     page.get_by_label('Имя пользователя в Telegram').fill('@test_username')
     page.get_by_role('radio', name='Пятница, 20 ноября').focus()
@@ -326,6 +340,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
         check_cover_photos(page, origin)
+        check_auto_photos(browser, origin)
         check_club_preview(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
