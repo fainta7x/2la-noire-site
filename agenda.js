@@ -84,7 +84,7 @@
     }
     const date = dateText(evening.starts_at, false, true);
     showResult(node, evening, 'Итоги клубной игры', 'Итоги клубной игры · ' + date, () =>
-      make('p', date + ' · партий: ' + evening.games + ' · игроков: ' + evening.players));
+      make('p', date + ' · игр: ' + evening.games + ' · игроков: ' + evening.players));
   });
 
   const ratingPicture = (leaders) => {
