@@ -116,6 +116,21 @@
     tournaments.hidden = false;
   }).catch(() => {});
 
+  const seasons = document.getElementById('season-results');
+  if (seasons) read('/seasons').then((data) => {
+    const items = Array.isArray(data.seasons) ? data.seasons : [];
+    if (!items.length) return;
+    seasons.replaceChildren(make('h2', 'Таблицы сезонов'), ...items.map((item, index) => {
+      const block = make('details', undefined, 'result-block');
+      if (index === 0) block.open = true;
+      const range = [item.starts_at, item.ends_at].map((value) => dateText(value, false, true).replace(/^[^,]+, /, '')).join(' — ');
+      block.append(make('summary', item.title + (range.trim() !== '—' ? ' · ' + range : '')),
+        picture(item.image, 'Таблица сезона ' + item.title, () => table('Таблица сезона', ['Место', 'Игрок', 'Результат', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
+      return block;
+    }));
+    seasons.hidden = false;
+  }).catch(() => {});
+
   const history = document.getElementById('evening-history');
   if (history) read('/history').then((data) => {
     const items = Array.isArray(data.evenings) ? data.evenings : [];
