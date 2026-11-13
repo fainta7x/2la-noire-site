@@ -162,7 +162,7 @@ def check_layout(page, origin, width, height, snapshots=None):
         if route == 'club/':
             expect(page.locator('.club-grid a.text-link:not(.club-preview a)')).to_have_count(4)
             for destination in ('klubnye-igry', 'rating', 'sezony', 'turniry'):
-                expect(page.locator(f'.club-grid a[href="/{destination}/"]')).to_be_visible()
+                expect(page.locator(f'.club-grid a.text-link[href="/{destination}/"]:not(.club-preview a)')).to_be_visible()
         if route == 'igry/':
             expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
         if route == 'rating/':
