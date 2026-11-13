@@ -253,13 +253,11 @@ footer { border-top: 1px solid var(--line); }
 .next-evening-date { color: var(--muted); font-size: 1.1rem; }
 .gallery-preview {
   display: grid;
-  grid-template-columns: minmax(0, 1.22fr) repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
   gap: clamp(12px, 2.4vw, 30px);
 }
-.photo-preview { border-radius: clamp(16px, 2.2vw, 28px); cursor: pointer; }
-.photo-preview:nth-child(2) { margin-top: clamp(18px, 6vw, 72px); }
-.photo-preview:nth-child(3) { margin-top: clamp(12px, 3vw, 36px); }
+.photo-preview { aspect-ratio: 3 / 4; border-radius: clamp(16px, 2.2vw, 28px); cursor: pointer; }
 .photo-preview img { object-position: center 46%; }
 .home-gallery { background: radial-gradient(ellipse at 35% 70%, #382147, transparent 68%), var(--ink); }
 @media (max-width: 760px) {
@@ -275,7 +273,7 @@ footer { border-top: 1px solid var(--line); }
     padding: 4px 4px 12px;
     margin-inline: -4px;
   }
-  .gallery-preview .photo-preview { margin-top: 0; scroll-snap-align: start; }
+  .gallery-preview .photo-preview { scroll-snap-align: start; }
 }
 
 .player-paths { align-items: stretch; gap: clamp(14px, 2.5vw, 28px); }
