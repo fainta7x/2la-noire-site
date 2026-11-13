@@ -99,6 +99,16 @@ class SiteHandler(SimpleHTTPRequestHandler):
             ]})
         elif path == '/api/public/welcome/session':
             self.send_json({'signed_in': False})
+        elif path == '/api/public/welcome/agenda':
+            self.send_json({'evenings': [
+                dict(EVENINGS[0], format='NOVICE'),
+                {'starts_at': '2026-11-20T21:00:00+03:00', 'format': 'CASUAL', 'free_seats': 4},
+            ]})
+        elif path == '/api/public/welcome/tournaments':
+            self.send_json({'tournaments': [
+                {'title': 'Кубок клуба', 'date': '2026-11-07T08:00:00Z',
+                 'standings': [{'place': 1, 'name': 'Игрок 1'}]},
+            ]})
         elif path == '/api/public/welcome/rating':
             self.send_json({'players': PLAYERS})
         else:
@@ -251,6 +261,17 @@ def check_form(page, origin, server):
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
 
 
+def check_club_preview(page, origin):
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(origin + 'club/')
+    expect(page.locator('#club-evening')).to_contain_text('21:00')
+    expect(page.locator('#club-evening')).to_contain_text('Свободно мест: 4')
+    expect(page.locator('#club-rating tbody tr')).to_have_count(3)
+    expect(page.locator('#club-rating tbody')).to_contain_text('1599')
+    expect(page.locator('#club-tournament')).to_contain_text('Кубок клуба')
+    expect(page.locator('#club-tournament')).to_contain_text('Победитель — Игрок 1')
+
+
 def check_browser(browser_type, origin, server, snapshots=None):
     with browser_type.launch() as browser:
         context = browser.new_context(viewport={'width': 1891, 'height': 933}, reduced_motion='reduce')
@@ -273,6 +294,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
         check_cover_photos(page, origin)
+        check_club_preview(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'

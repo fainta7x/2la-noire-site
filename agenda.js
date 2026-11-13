@@ -62,6 +62,47 @@
     return link;
   };
 
+  const preview = (id, endpoint, render) => {
+    const node = document.getElementById(id);
+    if (!node) return;
+    read(endpoint).then((data) => render(node, data)).catch(() => {});
+  };
+
+  preview('club-evening', '/agenda', (node, data) => {
+    const evening = (data.evenings || []).find((item) => item.format === 'CASUAL' && dateText(item.starts_at));
+    if (!evening) {
+      node.replaceChildren(make('p', 'Новая дата пока не объявлена.'));
+      return;
+    }
+    const when = make('time', dateText(evening.starts_at, true), 'club-preview-date');
+    when.dateTime = evening.starts_at;
+    const seats = seatsText(evening.free_seats);
+    node.replaceChildren(make('h3', 'Ближайшая игра'), when);
+    if (seats) node.append(make('p', seats, 'agenda-seats'));
+  });
+
+  preview('club-rating', '/rating', (node, data) => {
+    const leaders = (data.players || []).slice(0, 3);
+    if (!leaders.length) {
+      node.replaceChildren(make('p', 'Игроков в таблице пока нет.'));
+      return;
+    }
+    node.replaceChildren(table('Топ-3 клуба', ['Место', 'Игрок', 'Elo'], leaders.map((player) => [player.place, player.nickname, player.elo])));
+  });
+
+  preview('club-tournament', '/tournaments', (node, data) => {
+    const latest = (data.tournaments || [])[0];
+    if (!latest) {
+      node.replaceChildren(make('p', 'Опубликованных итогов пока нет.'));
+      return;
+    }
+    const date = dateText(latest.date, false, true);
+    const winner = latest.standings?.find((row) => Number(row.place) === 1);
+    node.replaceChildren(make('h3', 'Последний турнир'), make('p', latest.title, 'club-preview-date'));
+    if (date) node.append(make('p', date));
+    if (winner?.name) node.append(make('p', 'Победитель — ' + winner.name));
+  });
+
   const tournaments = document.getElementById('tournament-results');
   if (tournaments) read('/tournaments').then((data) => {
     const items = Array.isArray(data.tournaments) ? data.tournaments : [];

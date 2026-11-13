@@ -338,3 +338,17 @@ footer { border-top: 1px solid var(--line); }
 .result-picture{display:block;margin-top:12px}.result-picture img{display:block;width:100%;max-width:540px;height:auto;margin:0 auto;border-radius:12px}
 #evening-history{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,440px),1fr));align-items:start}#evening-history>h2{grid-column:1/-1;margin-bottom:0}#evening-history .result-block{margin:0}
 #tournament-results .result-picture img{max-width:640px}
+
+.club-preview {
+  margin: 16px 0;
+  padding: 12px 0;
+  border-block: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.club-preview h3 { font-size: .95rem; }
+.club-preview p { margin: 6px 0 0; }
+.club-preview .club-preview-date { display: block; margin-top: 6px; font-weight: 700; color: var(--text); }
+.club-preview .rating-table { table-layout: fixed; }
+.club-preview .rating-table th, .club-preview .rating-table td { padding-inline: 4px; }
+.club-preview .rating-table :is(th, td):first-child { width: 4.25em; }
+.club-preview .rating-table :is(th, td):last-child { width: 3.7em; text-align: right; }
