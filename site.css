@@ -376,3 +376,4 @@ footer { border-top: 1px solid var(--line); }
 .hero-dots button:focus-visible { outline: 2px solid var(--link); outline-offset: -4px; border-radius: 8px; }
 @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
 @media (max-width: 480px) { .hero { min-height: 480px; } }
+.hero-lead { text-wrap: balance; }

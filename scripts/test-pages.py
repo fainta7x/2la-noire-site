@@ -173,8 +173,8 @@ def check_layout(page, origin, width, height, snapshots=None):
                             type='jpeg', quality=84, animations='disabled')
         if route:
             continue
-        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_be_in_viewport()
-        expect(page.get_by_role('link', name='Записаться на игру', exact=True)).to_have_attribute('href', '/igry/#join')
+        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
+        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
         cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
@@ -248,7 +248,7 @@ def check_gallery(page, origin):
 
 def check_form(page, origin, server):
     page.goto(origin, wait_until='domcontentloaded')
-    page.get_by_role('link', name='Записаться на игру', exact=True).click()
+    page.locator('.main-nav').get_by_role('link', name='Запись на игру', exact=True).click()
     page.get_by_label('Имя', exact=True).fill('Тест формы')
     page.get_by_label('Имя пользователя в Telegram').fill('@test_username')
     page.get_by_role('radio', name='Пятница, 20 ноября').focus()
