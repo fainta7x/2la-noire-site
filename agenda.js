@@ -120,12 +120,11 @@
   if (seasons) read('/seasons').then((data) => {
     const items = Array.isArray(data.seasons) ? data.seasons : [];
     if (!items.length) return;
-    seasons.replaceChildren(make('h2', 'Таблицы сезонов'), ...items.map((item, index) => {
+    seasons.replaceChildren(make('h2', 'Итоги сезонов'), ...items.map((item, index) => {
       const block = make('details', undefined, 'result-block');
       if (index === 0) block.open = true;
-      const range = [item.starts_at, item.ends_at].map((value) => dateText(value, false, true).replace(/^[^,]+, /, '')).join(' — ');
-      block.append(make('summary', item.title + (range.trim() !== '—' ? ' · ' + range : '')),
-        picture(item.image, 'Таблица сезона ' + item.title, () => table('Таблица сезона', ['Место', 'Игрок', 'Результат', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
+      block.append(make('summary', item.title + (item.date_label ? ' · ' + item.date_label : '') + (item.current ? ' · идёт сейчас' : '')),
+        picture(item.image, 'Итоги сезона ' + item.title, () => table('Таблица сезона по Эло', ['Место', 'Игрок', 'Эло', 'Игры'], item.rows.map((row) => [row.place, row.nickname, row.value, row.detail]))));
       return block;
     }));
     seasons.hidden = false;
