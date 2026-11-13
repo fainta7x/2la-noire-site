@@ -62,45 +62,85 @@
     return link;
   };
 
-  const preview = (id, endpoint, render) => {
+  const preview = (id, endpoint, render, onError) => {
     const node = document.getElementById(id);
     if (!node) return;
-    read(endpoint).then((data) => render(node, data)).catch(() => {});
+    read(endpoint).then((data) => render(node, data)).catch(() => onError?.(node)).catch(() => {});
   };
 
-  preview('club-evening', '/agenda', (node, data) => {
-    const evening = (data.evenings || []).find((item) => item.format === 'CASUAL' && dateText(item.starts_at));
+  const showResult = (node, item, title, description, fallback) => {
+    node.replaceChildren(make('h3', title), picture(item.image, description, fallback));
+  };
+
+  preview('club-evening', '/history', (node, data) => {
+    const evening = data.evenings?.find((item) => item.format === 'CASUAL');
     if (!evening) {
-      node.replaceChildren(make('p', 'Новая дата пока не объявлена.'));
+      node.replaceChildren(make('p', 'Итогов клубных игр пока нет.'));
       return;
     }
-    const when = make('time', dateText(evening.starts_at, true), 'club-preview-date');
-    when.dateTime = evening.starts_at;
-    const seats = seatsText(evening.free_seats);
-    node.replaceChildren(make('h3', 'Ближайшая игра'), when);
-    if (seats) node.append(make('p', seats, 'agenda-seats'));
+    const date = dateText(evening.starts_at, false, true);
+    showResult(node, evening, 'Итоги клубной игры', 'Итоги клубной игры · ' + date, () =>
+      make('p', date + ' · партий: ' + evening.games + ' · игроков: ' + evening.players));
   });
 
-  preview('club-rating', '/rating', (node, data) => {
+  const ratingPicture = (leaders) => {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 480 340');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', leaders.map((player) => player.place + '. ' + player.nickname + ' — ' + player.elo + ' Elo').join(', '));
+    const draw = (tag, attributes, value) => {
+      const element = document.createElementNS(ns, tag);
+      Object.entries(attributes).forEach(([key, attribute]) => element.setAttribute(key, attribute));
+      if (value !== undefined) element.textContent = value;
+      svg.append(element);
+    };
+    svg.setAttribute('font-family', 'inherit');
+    draw('rect', { width: 480, height: 340, rx: 16, fill: '#271b36' });
+    draw('text', { x: 28, y: 49, fill: '#fff', 'font-size': 27, 'font-weight': 700 }, 'Топ-3 клуба');
+    draw('text', { x: 450, y: 49, fill: '#e5c0f9', 'text-anchor': 'end', 'font-size': 22 }, 'Elo');
+    leaders.forEach((player, index) => {
+      const y = 77 + index * 79;
+      draw('rect', { x: 24, y, width: 432, height: 62, rx: 12, fill: '#37264d' });
+      draw('text', { x: 42, y: y + 39, fill: '#ffd195', 'font-size': 24 }, player.place);
+      const nickname = String(player.nickname ?? '');
+      const label = [...nickname].length > 16 ? [...nickname].slice(0, 15).join('') + '…' : nickname;
+      draw('text', { x: 100, y: y + 39, fill: '#fff', 'font-size': 22 }, label);
+      draw('text', { x: 436, y: y + 39, fill: '#fff', 'text-anchor': 'end', 'font-size': 24, 'font-weight': 700 }, player.elo);
+    });
+    const link = make('a', undefined, 'result-picture');
+    link.href = '/rating/';
+    link.append(svg);
+    return link;
+  };
+
+  const showCurrentRating = async (node) => {
+    const data = await read('/rating');
     const leaders = (data.players || []).slice(0, 3);
-    if (!leaders.length) {
-      node.replaceChildren(make('p', 'Игроков в таблице пока нет.'));
-      return;
-    }
-    node.replaceChildren(table('Топ-3 клуба', ['Место', 'Игрок', 'Elo'], leaders.map((player) => [player.place, player.nickname, player.elo])));
-  });
+    node.replaceChildren(leaders.length ? ratingPicture(leaders) : make('p', 'Игроков в рейтинге пока нет.'));
+  };
+
+  preview('club-rating', '/seasons', async (node, data) => {
+    const season = data.seasons?.find((item) => item.image);
+    if (!season) return showCurrentRating(node);
+    showResult(node, season, season.title, 'Таблица сезона ' + season.title, () => {
+      const link = make('a', 'Открыть таблицу сезона', 'text-link');
+      link.href = '/sezony/#season-results';
+      return link;
+    });
+  }, showCurrentRating);
 
   preview('club-tournament', '/tournaments', (node, data) => {
-    const latest = (data.tournaments || [])[0];
+    const latest = data.tournaments?.[0];
     if (!latest) {
       node.replaceChildren(make('p', 'Опубликованных итогов пока нет.'));
       return;
     }
-    const date = dateText(latest.date, false, true);
-    const winner = latest.standings?.find((row) => Number(row.place) === 1);
-    node.replaceChildren(make('h3', 'Последний турнир'), make('p', latest.title, 'club-preview-date'));
-    if (date) node.append(make('p', date));
-    if (winner?.name) node.append(make('p', 'Победитель — ' + winner.name));
+    showResult(node, latest, latest.title, 'Итоговая таблица турнира ' + latest.title, () => {
+      const link = make('a', 'Открыть итоги турнира', 'text-link');
+      link.href = '/turniry/#tournament-results';
+      return link;
+    });
   });
 
   const tournaments = document.getElementById('tournament-results');
