@@ -69,6 +69,10 @@
   };
 
   const showResult = (node, item, title, description, fallback) => {
+    const cached = node.querySelector('.result-picture');
+    const url = safeLink(item.image, new URL(app).origin);
+    if (cached && cached.href === url &&
+        (cached.dataset.games === undefined || cached.dataset.games === String(item.games))) return;
     node.replaceChildren(make('h3', title), picture(item.image, description, fallback));
   };
 

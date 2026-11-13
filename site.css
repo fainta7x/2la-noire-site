@@ -349,8 +349,9 @@ footer { border-top: 1px solid var(--line); }
 .club-preview p { margin: 6px 0 0; }
 .club-preview .result-picture {
   display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
-  height: clamp(220px, 26vw, 340px);
+  aspect-ratio: 1;
   overflow: hidden;
   border-radius: 12px;
   background: #271b36;
@@ -360,5 +361,6 @@ footer { border-top: 1px solid var(--line); }
   height: 100%;
   max-width: 100%;
   min-height: 0;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: top center;
 }
