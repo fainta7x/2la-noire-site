@@ -347,8 +347,18 @@ footer { border-top: 1px solid var(--line); }
 }
 .club-preview h3 { font-size: .95rem; }
 .club-preview p { margin: 6px 0 0; }
-.club-preview .club-preview-date { display: block; margin-top: 6px; font-weight: 700; color: var(--text); }
-.club-preview .rating-table { table-layout: fixed; }
-.club-preview .rating-table th, .club-preview .rating-table td { padding-inline: 4px; }
-.club-preview .rating-table :is(th, td):first-child { width: 4.25em; }
-.club-preview .rating-table :is(th, td):last-child { width: 3.7em; text-align: right; }
+.club-preview .result-picture {
+  display: grid;
+  place-items: center;
+  height: clamp(220px, 26vw, 340px);
+  overflow: hidden;
+  border-radius: 12px;
+  background: #271b36;
+}
+.club-preview .result-picture :is(img, svg) {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  object-fit: contain;
+}

@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import re
 import threading
 from collections import Counter
 from functools import partial
@@ -104,9 +105,16 @@ class SiteHandler(SimpleHTTPRequestHandler):
                 dict(EVENINGS[0], format='NOVICE'),
                 {'starts_at': '2026-11-20T21:00:00+03:00', 'format': 'CASUAL', 'free_seats': 4},
             ]})
+        elif path == '/api/public/welcome/history':
+            self.send_json({'evenings': [
+                {'starts_at': '2026-11-07T21:00:00+03:00', 'games': 3, 'players': 10, 'format': 'CASUAL',
+                 'image': '/img/favicon.png'},
+            ]})
+        elif path == '/api/public/welcome/seasons':
+            self.send_json({'seasons': []})
         elif path == '/api/public/welcome/tournaments':
             self.send_json({'tournaments': [
-                {'title': 'Кубок клуба', 'date': '2026-11-07T08:00:00Z',
+                {'title': 'Кубок клуба', 'date': '2026-11-07T08:00:00Z', 'image': '/img/favicon.png',
                  'standings': [{'place': 1, 'name': 'Игрок 1'}]},
             ]})
         elif path == '/api/public/welcome/rating':
@@ -263,13 +271,24 @@ def check_form(page, origin, server):
 
 def check_club_preview(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
-    page.goto(origin + 'club/')
-    expect(page.locator('#club-evening')).to_contain_text('21:00')
-    expect(page.locator('#club-evening')).to_contain_text('Свободно мест: 4')
-    expect(page.locator('#club-rating tbody tr')).to_have_count(3)
-    expect(page.locator('#club-rating tbody')).to_contain_text('1599')
-    expect(page.locator('#club-tournament')).to_contain_text('Кубок клуба')
-    expect(page.locator('#club-tournament')).to_contain_text('Победитель — Игрок 1')
+    def serve_preview(route):
+        route.fulfill(path=Path(__file__).resolve().parents[1] / 'img' / 'favicon.png')
+
+    image_url = 'https://app.2lamafia.ru/img/favicon.png'
+    page.route(image_url, serve_preview)
+    try:
+        page.goto(origin + 'club/')
+        for selector in ('#club-evening', '#club-tournament'):
+            preview = page.locator(selector)
+            expect(preview.locator('a.result-picture')).to_have_attribute('href', image_url)
+            image = preview.locator('img')
+            expect(image).to_be_visible()
+            assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
+        expect(page.locator('#club-rating svg')).to_have_attribute('aria-label', re.compile('Игрок 1 — 1599 Elo'))
+        expect(page.locator('#club-rating .result-picture')).to_have_attribute('href', '/rating/')
+    finally:
+        page.unroute(image_url, serve_preview)
+
 
 
 def check_browser(browser_type, origin, server, snapshots=None):
