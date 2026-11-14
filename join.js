@@ -248,4 +248,24 @@
     root.innerHTML = '<p class="join-empty" role="status">Расписание сейчас не загрузилось. <a href="' + organizer + '">Напиши организатору</a> или проверь анонсы в <a href="' + telegram + '">Telegram клуба</a>.</p>';
   };
   info.then((data) => data ? mount(data) : showFallback()).catch(showFallback);
+  // A signed-in player already has a profile: point to the cabinet, where one tap marks "Иду".
+  const showMember = (detail) => {
+    const card = document.querySelector('.join-form-card');
+    const cabinet = document.querySelector('#account a');
+    if (!card || card.querySelector('.join-member') || !cabinet || !card.querySelector('form')) return;
+    const note = document.createElement('p');
+    note.className = 'join-member';
+    note.append((detail && detail.nickname ? detail.nickname + ', ты уже в клубе. ' : 'Ты уже в клубе. ') + 'Отметься на вечере в кабинете: ');
+    const link = document.createElement('a');
+    link.href = cabinet.href;
+    link.textContent = 'открыть кабинет';
+    note.append(link, '. Форма ниже нужна, чтобы записать друга.');
+    card.querySelector('form').before(note);
+  };
+  let member = null;
+  const refresh = () => { if (member) showMember(member); };
+  window.addEventListener('club:signed-in', (event) => { member = event.detail || {}; refresh(); });
+  if (document.documentElement.dataset.signedIn === '1') member = {};
+  new MutationObserver(refresh).observe(root, { childList: true, subtree: true });
+  refresh();
 })();
