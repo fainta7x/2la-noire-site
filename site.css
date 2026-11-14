@@ -591,3 +591,57 @@ footer { border-top: 1px solid var(--line); }
 
 /* The fixed story image is decorative and must never block header/navigation clicks. */
 .journey-visual { pointer-events: none; }
+
+/* Mobile-first editorial layout safeguards: keep readable cards and imagery
+   rather than squeezing desktop compositions into narrow viewports. */
+@media (max-width: 760px) {
+  .section-inner, .header-inner, .hero-copy, .about-layout > *,
+  .sport-layout > *, .journey-layout > *, .place-story > *,
+  .club-grid > *, .player-paths > * { min-width: 0; }
+
+  .section h2, .page-opening h1, .club-path-grid h3,
+  .club-grid h3 { overflow-wrap: break-word; }
+
+  .chapter-nav-inner { overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
+  .chapter-nav-inner a { flex: 0 0 auto; scroll-snap-align: start; }
+
+  .editorial-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-columns: auto;
+    gap: 12px;
+  }
+  .editorial-gallery .photo-preview,
+  .editorial-gallery .photo-preview:nth-child(2) {
+    min-width: 0;
+    transform: none;
+    aspect-ratio: 4 / 5;
+  }
+  .editorial-gallery .photo-preview:last-child { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+
+  /* Parallax is a desktop detail: it can jump and clip on touch screens. */
+  .motion-enabled .motion-photo img,
+  .motion-enabled .motion-place-photo,
+  .motion-enabled .journey-visual .journey-photo-stack .journey-shot {
+    transform: none;
+    transition: opacity .35s ease;
+  }
+  .journey-visual { overflow: hidden; }
+  .primary-button, .secondary-button { max-width: 100%; }
+}
+@media (max-width: 480px) {
+  .section-inner, .header-inner { --gutter: 18px; }
+  .section:not(.next-evening) { padding-block: 56px; }
+  .hero-copy { padding-inline: 2px; }
+  .hero-actions .primary-button { justify-content: center; }
+  .editorial-gallery { grid-template-columns: minmax(0, 1fr); }
+  .editorial-gallery .photo-preview,
+  .editorial-gallery .photo-preview:nth-child(2),
+  .editorial-gallery .photo-preview:last-child {
+    grid-column: auto;
+    aspect-ratio: 4 / 3;
+  }
+  .chapter-nav-inner { padding-inline: 18px; }
+  .photo-dialog[open] { grid-template-columns: 36px minmax(0, 1fr) 36px; }
+  .photo-dialog button { min-width: 36px; }
+}
