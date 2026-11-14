@@ -220,7 +220,10 @@ def check_layout(page, origin, width, height, snapshots=None):
                 box = photo.bounding_box()
                 assert box and box['height'] >= 140 and box['width'] >= 200, (width, i, box)
                 photo.scroll_into_view_if_needed()  # trigger actual lazy-loading before decode
-                assert photo.locator('img').evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), (width, i)
+                image = photo.locator('img')
+                image.evaluate("(img) => { img.loading = 'eager'; }")
+                expect(image).to_have_js_property('complete', True)
+                assert image.evaluate('(img) => img.naturalWidth > 0'), (width, i)
             assert not page.locator('[data-journey-visual]').is_visible(), width
             club_img = page.locator('.place-story > img')
             club_box = club_img.bounding_box()
