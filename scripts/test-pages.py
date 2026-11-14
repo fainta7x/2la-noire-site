@@ -228,6 +228,8 @@ def check_layout(page, origin, width, height, snapshots=None):
         elif width >= 901:
             assert page.locator('[data-journey-visual]').is_visible(), width
             assert not page.locator('.journey-mobile-photo').first.is_visible(), width
+        # The mobile photo checks scroll the page; restore the top for hero assertions.
+        page.evaluate("() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); }")
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
         cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
