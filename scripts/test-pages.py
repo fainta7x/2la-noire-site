@@ -154,6 +154,37 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert typography['headline'] == typography['brand'] == typography['button'], (route, width, typography)
         assert typography['headerGap'] <= 1, f'Header alignment at /{route}, {width}: {typography}'
         assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
+
+        # A page can have zero horizontal scroll while its headings/cards are clipped
+        # by overflow:hidden/clip parents. Check actual content geometry as well.
+        if width <= 440:
+            mobile_rects = page.evaluate("""() => {
+                const selectors = [
+                    '.section h2', '.page-opening h1', '.primary-button',
+                    '.secondary-button', '.club-grid article', '.club-path-grid article'
+                ];
+                return selectors.flatMap(selector =>
+                    [...document.querySelectorAll(selector)].filter(el => {
+                        const style = getComputedStyle(el);
+                        return style.display !== 'none' && style.visibility !== 'hidden';
+                    }).map(el => {
+                        const r = el.getBoundingClientRect();
+                        return {selector, text: (el.textContent || '').trim().slice(0, 50),
+                                left: r.left, right: r.right, width: r.width};
+                    })
+                );
+            }""")
+            clipped = [r for r in mobile_rects
+                       if r['width'] > 0 and (r['left'] < -2 or r['right'] > width + 2)]
+            assert not clipped, f'Clipped mobile content at /{route}, {width}: {clipped}'
+        if route == '' and width <= 760:
+            gallery_items = page.locator('.editorial-gallery .photo-preview')
+            if gallery_items.count() >= 3:
+                boxes = [gallery_items.nth(i).bounding_box() for i in range(3)]
+                assert all(b and b['width'] >= 120 for b in boxes), (width, boxes)
+                assert all(b['x'] >= -2 and b['x'] + b['width'] <= width + 2 for b in boxes), (width, boxes)
+                assert boxes[1]['x'] >= boxes[0]['x'] + boxes[0]['width'] - 2 or (
+                    boxes[1]['y'] >= boxes[0]['y'] + boxes[0]['height'] - 2), (width, boxes)
         assert page.locator('.skip-link').bounding_box()['y'] < 0, f'Skip link visible at /{route}, {width}'
         if route in ('klubnye-igry/', 'rating/', 'sezony/', 'turniry/'):
             expect(page.locator('.main-nav [aria-current="location"]')).to_have_attribute('href', '/club/')
