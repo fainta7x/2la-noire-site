@@ -204,6 +204,35 @@ def check_layout(page, origin, width, height, snapshots=None):
                             type='jpeg', quality=84, animations='disabled')
         if route:
             continue
+        # Screenshot-based regression: mobile story photos must be visible
+        # alongside their own stage and the chapter navigation must fit.
+        if width <= 760:
+            nav_links = page.locator('.chapter-nav-inner a')
+            assert nav_links.count() == 5
+            nav_boxes = [nav_links.nth(i).bounding_box() for i in range(5)]
+            assert all(b and b['x'] >= -2 and b['x'] + b['width'] <= width + 2 for b in nav_boxes), (width, nav_boxes)
+            assert nav_boxes[4]['y'] > nav_boxes[0]['y'], (width, nav_boxes)
+            journey = page.locator('[data-journey] article')
+            assert journey.count() == 3
+            for i in range(3):
+                photo = journey.nth(i).locator('.journey-mobile-photo')
+                assert photo.is_visible(), (width, i)
+                box = photo.bounding_box()
+                assert box and box['height'] >= 140 and box['width'] >= 200, (width, i, box)
+                photo.scroll_into_view_if_needed()  # trigger actual lazy-loading before decode
+                image = photo.locator('img')
+                image.evaluate("(img) => { img.loading = 'eager'; }")
+                expect(image).to_have_js_property('complete', True)
+                assert image.evaluate('(img) => img.naturalWidth > 0'), (width, i)
+            assert not page.locator('[data-journey-visual]').is_visible(), width
+            club_img = page.locator('.place-story > img')
+            club_box = club_img.bounding_box()
+            assert club_box and 200 <= club_box['height'] <= 361, (width, club_box)
+        elif width >= 901:
+            assert page.locator('[data-journey-visual]').is_visible(), width
+            assert not page.locator('.journey-mobile-photo').first.is_visible(), width
+        # The mobile photo checks scroll the page; restore the top for hero assertions.
+        page.evaluate("() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); }")
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
         cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
