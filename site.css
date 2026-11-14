@@ -695,6 +695,8 @@ footer { border-top: 1px solid var(--line); }
   .club-path-grid article { padding-block: 22px 32px; }
   .journey-mobile-photo {
     display: block;
+    width: 100%;
+    align-self: stretch;
     overflow: hidden;
     margin: 18px 0 20px;
     border-radius: 12px;
