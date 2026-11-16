@@ -72,12 +72,9 @@
     const candidates = [
       section.querySelector('.section-kicker'),
       section.querySelector('h2'),
-      section.querySelector('.section-copy'),
-      section.querySelector('.intro-image'),
-      section.querySelector('.sport-photo'),
-      section.querySelector('.journey-visual'),
-      section.querySelector('.place-story > img'),
-      ...section.querySelectorAll('.club-path-grid article, .player-paths > div, .editorial-gallery .photo-preview')
+      section.querySelector('.story-copy'),
+      section.querySelector('.story-photo'),
+      ...section.querySelectorAll('.player-paths > div, .editorial-gallery .photo-preview')
     ].filter(Boolean);
     candidates.forEach((node, index) => {
       node.classList.add('motion-enter');
@@ -103,46 +100,10 @@
     motionItems.forEach((node) => node.classList.add('motion-visible'));
   }
 
-  // An active stage follows the reading position: the layout stays stable
-  // and content remains readable before, during, and after the animation.
-  const makeActive = (selector, itemSelector) => {
-    const root = document.querySelector(selector);
-    if (!root) return () => {};
-    const items = Array.from(root.querySelectorAll(itemSelector));
-    return () => {
-      const point = innerHeight * .65;
-      let index = 0;
-      items.forEach((item, i) => {
-        if (item.getBoundingClientRect().top < point) index = i;
-      });
-      items.forEach((item, i) => item.classList.toggle('is-current', i === index));
-    };
-  };
-  const highlightSteps = makeActive('[data-game-steps]', 'li');
-  const highlightJourney = makeActive('[data-journey]', 'article');
-  const journeyVisual = document.querySelector('[data-journey-visual]');
-  const journeySlides = journeyVisual ? Array.from(journeyVisual.querySelectorAll('.journey-shot')) : [];
-  const journeyCaption = journeyVisual?.querySelector('.journey-caption');
-  const journeyCounter = journeyVisual?.querySelector('.journey-counter');
-  const journeyCards = Array.from(document.querySelectorAll('[data-journey] article'));
-  const journeyLabels = ['Первая игра', 'Клубные встречи', 'Турниры'];
-  let journeyIndex = -1;
-  const syncJourneyPhoto = () => {
-    if (!journeySlides.length || !journeyCards.length) return;
-    const currentIndex = Math.max(0, journeyCards.findIndex(card => card.classList.contains('is-current')));
-    if (journeyIndex === currentIndex) return;
-    journeyIndex = currentIndex;
-    journeySlides.forEach((shot, i) => shot.classList.toggle('is-active', i === currentIndex));
-    if (journeyCaption) journeyCaption.textContent = journeyLabels[currentIndex];
-    if (journeyCounter) journeyCounter.textContent = String(currentIndex + 1).padStart(2, '0') + ' / 03';
-  };
   const motionPhotos = Array.from(document.querySelectorAll('.motion-photo, .motion-place-photo'));
   let motionFrame = false;
   const syncMotion = () => {
     motionFrame = false;
-    highlightSteps();
-    highlightJourney();
-    syncJourneyPhoto();
     if (reduceMotion.matches) {
       motionPhotos.forEach((node) => node.style.removeProperty('--photo-shift'));
       return;

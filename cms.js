@@ -43,7 +43,7 @@
     Object.entries(fields).forEach(([key, selector]) => {
       const value = customized(site, key);
       const field = document.querySelector(selector);
-      if (value && field) {
+      if (value && field && !field.closest('[data-editorial]')) {
         field.textContent = value;
         field.hidden = false;
       }

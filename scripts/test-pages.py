@@ -204,34 +204,25 @@ def check_layout(page, origin, width, height, snapshots=None):
                             type='jpeg', quality=84, animations='disabled')
         if route:
             continue
-        # Screenshot-based regression: mobile story photos must be visible
-        # alongside their own stage and the chapter navigation must fit.
+        # Every chapter must remain reachable and its photograph readable on phones.
+        nav_links = page.locator('.chapter-nav-inner a')
+        assert nav_links.count() == 5
         if width <= 760:
-            nav_links = page.locator('.chapter-nav-inner a')
-            assert nav_links.count() == 5
             nav_boxes = [nav_links.nth(i).bounding_box() for i in range(5)]
             assert all(b and b['x'] >= -2 and b['x'] + b['width'] <= width + 2 for b in nav_boxes), (width, nav_boxes)
             assert nav_boxes[4]['y'] > nav_boxes[0]['y'], (width, nav_boxes)
-            journey = page.locator('[data-journey] article')
-            assert journey.count() == 3
-            for i in range(3):
-                photo = journey.nth(i).locator('.journey-mobile-photo')
-                assert photo.is_visible(), (width, i)
+        for link in nav_links.all():
+            assert page.locator(link.get_attribute('href')).count() == 1
+        for photo in page.locator('.story-photo').all():
+            photo.scroll_into_view_if_needed()
+            image = photo.locator('img')
+            image.evaluate('(img) => { img.loading = "eager"; }')
+            expect(image).to_have_js_property('complete', True)
+            assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
+            if width <= 760:
                 box = photo.bounding_box()
-                assert box and box['height'] >= 140 and box['width'] >= 200, (width, i, box)
-                photo.scroll_into_view_if_needed()  # trigger actual lazy-loading before decode
-                image = photo.locator('img')
-                image.evaluate("(img) => { img.loading = 'eager'; }")
-                expect(image).to_have_js_property('complete', True)
-                assert image.evaluate('(img) => img.naturalWidth > 0'), (width, i)
-            assert not page.locator('[data-journey-visual]').is_visible(), width
-            club_img = page.locator('.place-story > img')
-            club_box = club_img.bounding_box()
-            assert club_box and 200 <= club_box['height'] <= 361, (width, club_box)
-        elif width >= 901:
-            assert page.locator('[data-journey-visual]').is_visible(), width
-            assert not page.locator('.journey-mobile-photo').first.is_visible(), width
-        # The mobile photo checks scroll the page; restore the top for hero assertions.
+                assert box and box['width'] >= 200 and 140 <= box['height'] <= max(400, height * .75), (width, box)
+        # The story photo checks scroll the page; restore the top for hero assertions.
         page.evaluate("() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); }")
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
@@ -263,6 +254,39 @@ def check_layout(page, origin, width, height, snapshots=None):
             gallery.scroll_into_view_if_needed()
             gallery.locator('img').evaluate_all('(images) => Promise.all(images.map((img) => img.decode()))')
             gallery.screenshot(path=snapshots / f'home-photos-{width}.jpg', type='jpeg', quality=84)
+
+
+def check_home_story(browser, page, origin):
+    # Old CRM paragraph fields must not overwrite the approved long-form homepage.
+    stale = 'Старая редакция из CMS'
+    endpoint = '**/api/public/welcome'
+    page.route(endpoint, lambda route: route.fulfill(
+        status=200, content_type='application/json',
+        body=json.dumps({'site': {'hero_lead': stale, 'about': stale, 'newcomers': stale}})))
+    try:
+        page.set_viewport_size({'width': 390, 'height': 844})
+        page.goto(origin, wait_until='networkidle')
+        expect(page.locator('.hero-lead')).not_to_contain_text(stale)
+        expect(page.locator('main')).not_to_contain_text(stale)
+        page.evaluate('document.documentElement.style.scrollBehavior = "auto"')
+        for link in page.locator('.chapter-nav a').all():
+            link.click()
+            heading = page.locator(link.get_attribute('href')).get_by_role('heading', level=2).first
+            expect(heading).to_be_in_viewport()
+            assert heading.bounding_box()['y'] >= page.locator('.chapter-nav').bounding_box()['y'] + page.locator('.chapter-nav').bounding_box()['height'] - 2
+    finally:
+        page.unroute(endpoint)
+    # The complete story and both ways to join are available without JavaScript.
+    context = browser.new_context(java_script_enabled=False, viewport={'width': 390, 'height': 844})
+    try:
+        fallback = context.new_page()
+        fallback.goto(origin)
+        for heading in fallback.locator('main h2').all():
+            expect(heading).to_be_visible()
+        expect(fallback.get_by_role('link', name='Записаться на первый вечер', exact=True)).to_have_attribute('href', '/igry/#join')
+        expect(fallback.locator('.story-join').get_by_role('link', name='Ближайшие турниры', exact=True)).to_have_attribute('href', '/turniry/')
+    finally:
+        context.close()
 
 
 def check_cover_photos(page, origin):
@@ -408,6 +432,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
 
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
+        check_home_story(browser, page, origin)
         check_cover_photos(page, origin)
         check_auto_photos(browser, origin)
         check_club_preview(page, origin)
