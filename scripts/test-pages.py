@@ -412,17 +412,22 @@ def check_booking(browser, page, origin):
     pending = []
     page.route(endpoint, lambda route: pending.append(route))
     try:
-        page.get_by_role('button', name='Записаться на игру').click()
+        with page.expect_request(endpoint) as sent:
+            page.get_by_role('button', name='Записаться на игру').click()
         expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_disabled()
-        assert pending[0].request.post_data_json['evening_id'] == 'e20'
+        assert sent.value.post_data_json['evening_id'] == 'e20'
         page.locator('[data-evening-id="e13"] a').click()
         expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_checked()
         pending.pop(0).fulfill(status=503, content_type='application/json', body='{"error":"Попробуй позже"}')
         expect(page.locator('#join-error')).to_contain_text('Попробуй позже')
         expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_enabled()
         expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
+        # Only the first response needs to stay pending. Let the retry receive
+        # its response through the route handler, regardless of browser timing.
+        page.unroute(endpoint)
+        page.route(endpoint, lambda route: route.fulfill(
+            status=200, content_type='application/json', body='{"ok":true,"booked":false}'))
         page.get_by_role('button', name='Записаться на игру').click()
-        pending.pop(0).fulfill(status=200, content_type='application/json', body='{"ok":true,"booked":false}')
         expect(page.locator('#join-result')).to_contain_text('Заявка получена')
         expect(page.locator('#join-result')).to_contain_text('Место пока не подтверждено')
         expect(page.locator('#join-result')).not_to_contain_text('Ты в списке')
