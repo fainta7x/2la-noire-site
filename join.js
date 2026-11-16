@@ -46,7 +46,7 @@
     const contactDrafts = {};
 
     root.innerHTML =
-      (selected ? '<button type="button" id="join-close" class="join-close">Свернуть запись <span aria-hidden="true">↑</span></button>' : '') +
+      (selected ? '<button type="button" id="join-close" class="join-close">Свернуть вечер <span aria-hidden="true">↑</span></button>' : '') +
       '<div class="join-layout">' +
         '<div class="join-head">' +
           '<div id="join-evening" aria-live="polite"></div>' +
