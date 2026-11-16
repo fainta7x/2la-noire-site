@@ -271,6 +271,10 @@ def check_home_story(browser, page, origin):
         page.evaluate('document.documentElement.style.scrollBehavior = "auto"')
         page.get_by_role('link', name='Узнать об игре', exact=True).click()
         expect(page.locator('#intro-title')).to_be_in_viewport()
+        for image in page.locator('.intro-collage img').all():
+            image.evaluate('(img) => { img.loading = "eager"; }')
+            expect(image).to_have_js_property('complete', True)
+            assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
         assert page.locator('#intro').bounding_box()['y'] < page.locator('.chapter-nav').bounding_box()['y']
         for link in page.locator('.chapter-nav a').all():
             link.click()

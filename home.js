@@ -74,9 +74,13 @@
       section.querySelector('.story-heading :is(h2, h3)'),
       section.querySelector('.story-copy'),
       section.querySelector('.story-photo'),
+      ...section.querySelectorAll('.home-intro-copy > *'),
+      section.querySelector('.intro-collage'),
       ...section.querySelectorAll('.player-paths > div, .editorial-gallery .photo-preview')
     ].filter(Boolean);
-    candidates.forEach((node, index) => {
+    // Reveal a parent once; avoid animating both a copy block and its nested heading.
+    const roots = candidates.filter(node => !candidates.some(other => other !== node && other.contains(node)));
+    roots.forEach((node, index) => {
       node.classList.add('motion-enter');
       node.style.setProperty('--enter-delay', Math.min(index, 3) * 75 + 'ms');
       motionItems.push(node);
