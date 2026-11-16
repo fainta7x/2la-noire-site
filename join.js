@@ -36,6 +36,7 @@
   fetch(api + '/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitor_id: createVisitorId(), source }) }).catch(() => {});
 
   const mount = (data) => {
+    const guestManagementEnabled = data.booking_management === true;
     const available = Array.isArray(data.evenings) && data.evenings.length ? data.evenings : data.evening ? [data.evening] : [];
     const evenings = available.filter(event => event && typeof event.id === 'string' && Number.isFinite(new Date(event.starts_at).getTime())).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
     const defaultPrice = typeof data.evening?.price === 'string' ? data.evening.price : '';
@@ -167,8 +168,9 @@
       form.querySelector('.join-kinds').disabled = true;
       let finished = false;
       try {
+        const proof = guestManagementEnabled && window.club.guestBooking ? await window.club.guestBooking.prepare(payload) : null;
         const response = await fetch(api + '/lead', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+          method: 'POST', headers: { 'Content-Type': 'application/json', ...(proof ? { Authorization: 'Bearer ' + proof.token } : {}) }, body: JSON.stringify(payload)
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || data.ok !== true) throw new Error(response.status === 429 ? 'Слишком много попыток. Попробуй позже.' : data.error || 'Не получилось отправить заявку.');
@@ -178,7 +180,10 @@
         const link = document.createElement('a');
         link.href = contactOrganizer;
         link.textContent = 'Написать организатору';
-        if (data.booked === true) {
+        if (data.management_required === true) {
+          heading.textContent = 'Открой свою персональную ссылку';
+          message.append('Она нужна, чтобы управлять существующей записью. Если ссылка не сохранилась, ', link, '.');
+        } else if (data.booked === true) {
           heading.textContent = evening ? 'Ты в списке · ' + day(evening.starts_at) : 'Ты в списке';
           message.append('Если планы изменятся, ', link, '.');
         } else if (data.already_booked === true) {
@@ -189,6 +194,21 @@
           message.append(evening ? 'Место пока не подтверждено. Организатор свяжется с тобой по указанному контакту.' : 'Организатор свяжется с тобой, когда появится дата.');
         }
         result.replaceChildren(heading, message);
+        if (data.management_token && window.club.guestBooking?.accept(data.management_token, proof?.contactHash)) {
+          message.textContent = (data.booked === true ? '' : 'Место пока не подтверждено. ') + 'Перенести или отменить запись можно без регистрации. Сохрани персональную ссылку в разделе «Моя запись».';
+          const manage = document.createElement('a');
+          manage.className = 'primary-button';
+          manage.href = '#my-booking';
+          manage.textContent = 'Моя запись →';
+          manage.onclick = event => { event.preventDefault(); window.club.guestBooking.open(); };
+          result.append(manage);
+          window.addEventListener('booking:changed', event => {
+            if (!window.club.guestBooking.matches(data.management_token)) return;
+            const booking = event.detail;
+            heading.textContent = booking.evening ? (booking.booked ? 'Текущая запись · ' : 'Заявка · ') + day(booking.evening.starts_at) : 'Запись отменена';
+            message.textContent = booking.evening ? 'Посмотреть или изменить актуальную запись можно в разделе «Моя запись».' : 'Выбрать другой вечер можно в разделе «Моя запись».';
+          });
+        }
         result.hidden = false;
         form.hidden = true;
         root.querySelector('#join-form-heading').hidden = true;

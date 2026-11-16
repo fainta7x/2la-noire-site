@@ -48,6 +48,31 @@ html.js .js-status { display: block; }
 .booking-calendar .primary-button { color:#fff; }
 .booking-timezone { margin:20px 0 0; color:var(--muted); font-size:.85rem; }
 .booking-count-note { margin:6px 0 0; color:var(--muted); font-size:.85rem; }
+.booking-management-link { margin:0 0 20px; }
+.booking-management { margin:0 0 30px; padding:clamp(22px,3vw,36px); border:1px solid #b6a0c5; border-radius:20px; background:#fffaf5; scroll-margin-top:100px; }
+.booking-manage-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.booking-manage-heading .eyebrow { margin:0; }
+.booking-manage-hide,.booking-manage-secondary { min-height:44px; padding:8px 0; border:0; background:none; color:#603497; font-weight:650; cursor:pointer; text-decoration:underline; text-underline-offset:4px; }
+.booking-manage-hide { font-size:.85rem; text-decoration:none; }
+.booking-manage-status { margin:20px 0 10px; color:#63566a; font-size:.9rem; }
+.booking-management .booking-manage-title { margin:0; max-width:28ch; color:#2d193b; font-size:clamp(1.5rem,3vw,2.4rem); line-height:1.2; letter-spacing:-.025em; text-transform:none; }
+.booking-manage-details { margin:14px 0 24px; color:#63566a; }
+.booking-manage-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px 24px; }
+.booking-management button:disabled,.booking-management select:disabled { opacity:.6; cursor:wait; }
+.booking-change-form { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #d3c6d7; }
+.booking-change-form label { grid-column:1 / -1; font-size:.9rem; font-weight:650; }
+.booking-change-form select,.booking-private-link { width:100%; min-width:0; min-height:48px; padding:10px 14px; border:1px solid #a48caf; border-radius:10px; background:#fffaf5; color:#2d193b; font:inherit; }
+.booking-cancel-confirm { margin-top:24px; padding:18px 22px; border-left:3px solid #ad4855; background:#f9e9e6; }
+.booking-cancel-confirm p { margin:0 0 12px; }
+.booking-cancel-confirm > div { display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center; }
+#booking-cancel-yes { min-height:44px; padding:10px 16px; border:1px solid #9c3945; border-radius:9px; background:#9c3945; color:#fff; font-weight:650; cursor:pointer; }
+.booking-manage-feedback { margin:18px 0 0; color:#31543f; line-height:1.6; }
+.booking-manage-feedback:empty { display:none; }
+.booking-manage-feedback.is-error { color:#9c3945; }
+.booking-manage-note { max-width:75ch; margin:18px 0 0; color:#63566a; font-size:.82rem; line-height:1.65; }
+.booking-manage-note a,.booking-change-form a { text-decoration:underline; text-underline-offset:3px; }
+.booking-private-link { margin-top:16px; font-size:.85rem; }
+.join-done .primary-button { margin-top:18px; color:#fff; text-decoration:none; }
 .booking-status,.join-empty { margin:0; padding:22px; border:1px solid var(--line); border-radius:12px; line-height:1.7; }
 .booking-status a,.join-empty a { color:var(--link); text-decoration:underline; text-underline-offset:3px; }
 .booking-panel { --text:#faf5f2; --muted:#d5cbd9; --faint:#c2b4c9; --line:#4f3d58; --link:#f3c376; --surface:#201729; color:var(--text); background:radial-gradient(ellipse at 100% 0,#3c24584d,transparent 65%),#110e16; padding:32px; border-radius:16px; margin-top:24px; min-width:0; }
@@ -156,6 +181,8 @@ html.js .js-status { display: block; }
  .join-form-card { padding-top:24px; border-top:1px solid var(--line); }
 }
 @media (max-width:760px) {
+ .booking-management { scroll-margin-top:24px; }
+ .booking-change-form { grid-template-columns:minmax(0,1fr); }
  .booking-page :is(#calendar,#join,#club-games),.join-form-card { scroll-margin-top:24px; }
  .booking-page .section { padding-block:44px; }
  .booking-opening-layout { gap:28px; }

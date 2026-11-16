@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="/join.css">
   <script src="/welcome.js" defer></script>
   <script src="/roster.js" defer></script>
+  <script src="/booking.js" defer></script>
   <script src="/join.js" defer></script>
   <script src="/cms.js" defer></script>
   <script src="/account.js" defer></script>
@@ -50,6 +51,8 @@
           <div><p class="eyebrow">Расписание</p><h2 id="calendar-title">Ближайшие игры</h2></div>
           <p>Для первого визита выбери вечер для новичков. На клубные игры записываемся через личный кабинет.</p>
         </div>
+        <a class="text-link booking-management-link" id="booking-management-link" href="#my-booking" hidden>Моя запись <span aria-hidden="true">→</span></a>
+        <div id="booking-management" class="booking-management" role="region" aria-label="Управление своей записью" hidden></div>
         <div id="agenda" class="agenda" aria-busy="true">
           <p class="booking-status js-status" role="status">Загружаем расписание…</p>
           <noscript><p>Даты встреч опубликованы в <a href="https://t.me/mafiatulasport">Telegram клуба</a>. Для записи можно <a href="https://t.me/Chagina7x">написать организатору</a>.</p></noscript>
@@ -104,7 +107,7 @@
         </div>
         <div class="booking-faq">
           <details><summary>Как понять, что запись подтверждена?</summary><p>После отправки форма покажет результат. «Ты в списке» означает, что запись подтверждена. Если появится «Заявка получена», место пока не подтверждено — организатор свяжется с тобой по указанному контакту.</p></details>
-          <details><summary>Что делать, если планы изменились?</summary><p><a data-organizer-link href="https://t.me/Chagina7x">Напиши организатору</a>, чтобы отменить или перенести запись.</p></details>
+          <details><summary>Что делать, если планы изменились?</summary><p id="booking-changes-answer"><a data-organizer-link href="https://t.me/Chagina7x">Напиши организатору</a>, чтобы отменить или перенести запись.</p></details>
           <details><summary>Можно прийти с друзьями?</summary><p>Да. Каждый участник может записаться отдельно. Если нужна помощь с записью компании, <a data-organizer-link href="https://t.me/Chagina7x">напиши организатору</a>.</p></details>
         </div>
       </div>

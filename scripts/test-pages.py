@@ -147,18 +147,18 @@ def check_layout(page, origin, width, height, snapshots=None):
         expect(page.get_by_role('link', name='Войти', exact=True)).to_have_count(1)
         typography = page.evaluate("""async () => {
             await document.fonts.ready;
-            const brand = document.querySelector('.site-header .brand-name');
+            const navigation = document.querySelector('.site-header .main-nav');
             return {
               loaded: document.fonts.check('700 20px Roboto', 'Спортивная мафия'),
               headline: getComputedStyle(document.querySelector('h1')).fontFamily,
-              brand: getComputedStyle(brand).fontFamily,
+              navigation: getComputedStyle(navigation).fontFamily,
               button: getComputedStyle(document.querySelector('.account a')).fontFamily,
               headerGap: Math.abs(document.querySelector('.site-header .brand').getBoundingClientRect().toJSON().y + document.querySelector('.site-header .brand').getBoundingClientRect().height / 2 -
                                   document.querySelector('.header-actions').getBoundingClientRect().top - document.querySelector('.header-actions').getBoundingClientRect().height / 2)
             };
         }""")
         assert typography['loaded'] and typography['headline'].startswith('Roboto'), (route, width, typography)
-        assert typography['headline'] == typography['brand'] == typography['button'], (route, width, typography)
+        assert typography['headline'] == typography['navigation'] == typography['button'], (route, width, typography)
         assert typography['headerGap'] <= 1, f'Header alignment at /{route}, {width}: {typography}'
         assert page.evaluate('document.documentElement.scrollWidth') <= width + 1, f'Horizontal overflow at /{route}, {width}'
 
@@ -614,6 +614,66 @@ def check_club_preview(page, origin):
 
 
 
+def check_guest_booking(browser, origin):
+    context = browser.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
+    context.add_init_script(INIT)
+    page = context.new_page()
+    state = {'id': 'e13', 'fail': False, 'token': '', 'writes': 0}
+    page.route('**/api/public/welcome', lambda route: route.fulfill(json={'booking_management': True, 'evening': dict(EVENINGS[0], price=PRICE), 'evenings': EVENINGS}))
+    def lead(route):
+        state['token'] = route.request.headers['authorization'].removeprefix('Bearer ')
+        route.fulfill(json={'ok': True, 'booked': True, 'management_token': state['token']})
+    def booking(route):
+        assert route.request.headers['authorization'] == 'Bearer ' + state['token']
+        if route.request.method == 'POST':
+            state['writes'] += 1
+            if state['fail']:
+                state['fail'] = False
+                route.fulfill(status=500, json={'error': 'Не получилось перенести запись. Попробуй ещё раз.'})
+                return
+            payload = route.request.post_data_json
+            state['id'] = None if payload['action'] == 'cancel' else payload['evening_id']
+        event = next((dict(item, status='published') for item in EVENINGS if item['id'] == state['id']), None)
+        route.fulfill(json={'ok': True, 'name': '<b>Аня</b>', 'evening': event, 'booked': bool(event), 'can_change': True, 'can_cancel': bool(event), 'games': []})
+    page.route('**/api/public/welcome/lead', lead)
+    page.route('**/api/public/welcome/booking', booking)
+    page.goto(origin + 'igry/')
+    page.locator('[data-evening-id="e13"] > summary').click()
+    page.locator('#join-name').fill('Аня')
+    page.locator('#join-contact').fill('@anna_booking')
+    page.locator('#join-form button[type=submit]').click()
+    expect(page.locator('#join-result')).to_contain_text('Ты в списке')
+    page.locator('#join-result a.primary-button').click()
+    expect(page.locator('#booking-management')).to_contain_text('Запись подтверждена')
+    expect(page.locator('.booking-manage-details b')).to_have_count(0)
+    page.locator('#booking-change').click()
+    page.locator('#booking-next-date').select_option('e20')
+    state['fail'] = True
+    page.locator('#booking-change-form button[type=submit]').click()
+    expect(page.locator('.booking-manage-feedback')).to_contain_text('Не получилось перенести')
+    assert state['id'] == 'e13'
+    expect(page.locator('#booking-next-date')).to_have_value('e20')
+    page.locator('#booking-change-form button[type=submit]').click()
+    expect(page.locator('.booking-manage-feedback')).to_contain_text('Запись подтверждена')
+    assert state['id'] == 'e20'
+    page.locator('#booking-cancel').click()
+    page.locator('#booking-cancel-no').click()
+    assert state['writes'] == 2
+    page.locator('#booking-cancel').click()
+    page.locator('#booking-cancel-yes').click()
+    expect(page.locator('.booking-manage-feedback')).to_contain_text('Запись отменена')
+    page.reload()
+    page.locator('#booking-management-link').click()
+    expect(page.locator('#booking-management')).to_contain_text('Сейчас нет активной записи')
+    context.clear_cookies()
+    page.evaluate('localStorage.clear()')
+    page.goto(origin + 'igry/#booking=' + state['token'])
+    expect(page.locator('#booking-management')).to_contain_text('Сейчас нет активной записи')
+    assert state['token'] not in page.url
+    assert page.evaluate('document.documentElement.scrollWidth') <= 390
+    context.close()
+
+
 def check_browser(browser_type, origin, server, snapshots=None):
     with browser_type.launch() as browser:
         context = browser.new_context(viewport={'width': 1891, 'height': 933}, reduced_motion='reduce')
@@ -642,6 +702,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         check_gallery(page, origin)
         check_form(page, origin, server)
         check_booking(browser, page, origin)
+        check_guest_booking(browser, origin)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'
         assert not errors, errors
     print(f'{browser_type.name}: {len(VIEWPORTS)} sizes × {len(PAGES)} pages, fresh and old cache, gallery, sign-up, rating', flush=True)

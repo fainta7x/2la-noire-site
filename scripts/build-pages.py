@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGES = ('index.html', 'igry/index.html', 'novichkam/index.html', 'pravila/index.html', 'foto/index.html', 'rating/index.html', 'klubnye-igry/index.html', 'sezony/index.html', 'turniry/index.html', 'blog/index.html', 'club/index.html')
 CLUB_PAGES = ('/klubnye-igry/', '/rating/', '/sezony/', '/turniry/')
 STYLES = ('site.css', 'join.css', 'pages.css')
-SCRIPTS = ('welcome.js', 'roster.js', 'join.js', 'cms.js', 'account.js', 'gallery.js', 'home.js', 'agenda.js')
+SCRIPTS = ('welcome.js', 'roster.js', 'booking.js', 'join.js', 'cms.js', 'account.js', 'gallery.js', 'home.js', 'agenda.js')
 LEGACY = (*STYLES, 'welcome.js', 'join.js', 'cms.js', 'account.js')
 PUBLIC = ('CNAME', 'robots.txt', 'sitemap.xml', 'hero-table.jpg', 'yandex_c46be070f2d80f16.html')
 

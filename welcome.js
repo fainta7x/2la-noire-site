@@ -1,5 +1,15 @@
 /* Common public data and analytics for the landing page. */
 (() => {
+  const bookingToken = /^#booking=([A-Za-z0-9_-]{43})$/.exec(location.hash)?.[1] || '';
+  // Remove the private fragment before analytics and sign-in return URLs are initialized.
+  if (bookingToken) history.replaceState(history.state, '', location.pathname + location.search + '#my-booking');
+  window.addEventListener('hashchange', event => {
+    const token = /^#booking=([A-Za-z0-9_-]{43})$/.exec(location.hash)?.[1];
+    if (!token) return;
+    event.stopImmediatePropagation();
+    history.replaceState(history.state, '', location.pathname + location.search + '#my-booking');
+    window.dispatchEvent(new CustomEvent('booking:access', { detail: { token } }));
+  });
   document.documentElement.classList.add('js');
   const app = 'https://app.2lamafia.ru';
   const api = app + '/api/public/welcome';
@@ -18,6 +28,7 @@
     return read();
   });
   window.club = {
+    bookingToken,
     app,
     api,
     read,
