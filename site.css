@@ -861,3 +861,20 @@ footer { border-top: 1px solid var(--line); }
   .home-story .story-join-paths h4 { font-size: 1.7rem; }
   .home-story .story-continuation .story-heading { margin-bottom: 24px; }
 }
+
+/* A short welcome connects the banner with the three editorial chapters. */
+.home-story .home-intro { padding-block: clamp(32px, 4vw, 56px); background: #110e16; }
+.home-story .home-intro-copy { max-width: 68ch; }
+.home-story .home-intro h2 {
+  margin: 0 0 20px;
+  font-size: clamp(1.55rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  text-transform: none;
+}
+.home-story .home-intro p { margin: 0 0 16px; color: var(--muted); line-height: 1.7; }
+.home-story .home-intro p:last-child { margin-bottom: 0; }
+.home-story #intro { scroll-margin-top: 94px; }
+@media (max-width: 1240px) {
+  .home-story #intro { scroll-margin-top: 24px; }
+}

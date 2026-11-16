@@ -225,7 +225,7 @@ def check_layout(page, origin, width, height, snapshots=None):
         # The story photo checks scroll the page; restore the top for hero assertions.
         page.evaluate("() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 0); }")
         expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_be_in_viewport()
-        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#about')
+        expect(page.get_by_role('link', name='Узнать об игре', exact=True)).to_have_attribute('href', '#intro')
         cover = page.get_by_role('region', name='Фотографии клуба').get_by_role('img', name='Игроки в масках за столом 2LA noire')
         expect(cover).to_be_visible()
         assert cover.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)'), f'Cover missing at {width}'
@@ -269,6 +269,9 @@ def check_home_story(browser, page, origin):
         expect(page.locator('.hero-lead')).not_to_contain_text(stale)
         expect(page.locator('main')).not_to_contain_text(stale)
         page.evaluate('document.documentElement.style.scrollBehavior = "auto"')
+        page.get_by_role('link', name='Узнать об игре', exact=True).click()
+        expect(page.locator('#intro-title')).to_be_in_viewport()
+        assert page.locator('#intro').bounding_box()['y'] < page.locator('.chapter-nav').bounding_box()['y']
         for link in page.locator('.chapter-nav a').all():
             link.click()
             heading = page.locator(link.get_attribute('href')).get_by_role('heading').first
