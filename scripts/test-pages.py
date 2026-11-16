@@ -39,6 +39,7 @@ LEGACY = {
     '/account.js': "document.body.dataset.oldAccount = 'yes';",
 }
 VENUE = {'name': 'Суп с котом', 'address': 'Пушкинский проезд, 4А'}
+PRICE = 'Первые 2 вечера бесплатно, дальше — 200 ₽ за игру'
 EVENINGS = [
     {'id': f'e{day}', 'starts_at': f'2026-11-{day}T19:00:00+03:00',
      'schedule': 'Правила в 18:30, первая игра в 19:00', 'venue': VENUE}
@@ -93,17 +94,18 @@ class SiteHandler(SimpleHTTPRequestHandler):
                 b'<body>Previous release<script src="/account.js"></script></body>',
                 'text/html')
         elif path == '/api/public/welcome':
-            self.send_json({'evening': EVENINGS[0], 'evenings': EVENINGS})
+            self.send_json({'evening': dict(EVENINGS[0], price=PRICE), 'evenings': EVENINGS})
         elif path == '/api/public/welcome/seats':
             self.send_json({'evening_id': self.path.rsplit('=', 1)[-1], 'going': 1, 'games': [
-                {'number': 1, 'starts_at': EVENINGS[0]['starts_at'], 'target': 10, 'taken': 1, 'people': ['Игрок']}
+                {'number': 1, 'starts_at': EVENINGS[0]['starts_at'], 'target': 9, 'taken': 1, 'people': ['Игрок']}
             ]})
         elif path == '/api/public/welcome/session':
             self.send_json({'signed_in': False})
         elif path == '/api/public/welcome/agenda':
             self.send_json({'evenings': [
                 dict(EVENINGS[0], format='NOVICE'),
-                {'starts_at': '2026-11-20T21:00:00+03:00', 'format': 'CASUAL', 'free_seats': 4},
+                dict(EVENINGS[1], format='NOVICE', free_seats=4),
+                {'id': 'club20', 'starts_at': '2026-11-20T21:00:00+03:00', 'format': 'CASUAL', 'free_seats': 4},
             ]})
         elif path == '/api/public/welcome/history':
             self.send_json({'evenings': [
@@ -377,6 +379,96 @@ def check_form(page, origin, server):
     expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
 
 
+def check_booking(browser, page, origin):
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(origin + 'igry/')
+    expect(page.locator('#join-evening')).to_contain_text(PRICE)
+    board = page.locator('.join-board')
+    expect(board).not_to_have_attribute('hidden', '')
+    assert not board.evaluate('(el) => el.open'), 'Seat list pushes the booking form down'
+    board.locator('summary').click()
+    expect(board).to_contain_text('1 из 9')
+    expect(board).to_contain_text('Свободно мест: 8')
+
+    filters = page.get_by_role('group', name='Формат игры')
+    filters.get_by_role('button', name='Клубные', exact=True).click()
+    expect(page.locator('.calendar-event')).to_have_count(1)
+    expect(page.locator('.calendar-event a')).to_have_attribute('href', 'https://app.2lamafia.ru/player')
+    filters.get_by_role('button', name='Для новичков', exact=True).click()
+    expect(page.locator('.calendar-event')).to_have_count(2)
+    expect(filters.get_by_role('button', name='Для новичков')).to_have_attribute('aria-pressed', 'true')
+    page.get_by_label('Имя', exact=True).fill('Тест календаря')
+    page.get_by_label('Имя пользователя в Telegram').fill('@calendar_test')
+    page.locator('[data-evening-id="e20"] a').click()
+    expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_checked()
+    expect(page.locator('#join-selection')).to_have_text('Пятница, 20 ноября · 19:00')
+    expect(page.locator('#join-form-heading')).to_be_focused()
+    expect(page.get_by_label('Имя', exact=True)).to_have_value('Тест календаря')
+    expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
+
+    # Keep the POST pending to check that calendar clicks cannot change the
+    # selected date halfway through a booking. All requests stay on the test server.
+    endpoint = '**/api/public/welcome/lead'
+    pending = []
+    page.route(endpoint, lambda route: pending.append(route))
+    try:
+        page.get_by_role('button', name='Записаться на игру').click()
+        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_disabled()
+        assert pending[0].request.post_data_json['evening_id'] == 'e20'
+        page.locator('[data-evening-id="e13"] a').click()
+        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_checked()
+        pending.pop(0).fulfill(status=503, content_type='application/json', body='{"error":"Попробуй позже"}')
+        expect(page.locator('#join-error')).to_contain_text('Попробуй позже')
+        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_enabled()
+        expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
+        page.get_by_role('button', name='Записаться на игру').click()
+        pending.pop(0).fulfill(status=200, content_type='application/json', body='{"ok":true,"booked":false}')
+        expect(page.locator('#join-result')).to_contain_text('Заявка получена')
+        expect(page.locator('#join-result')).to_contain_text('Место пока не подтверждено')
+        expect(page.locator('#join-result')).not_to_contain_text('Ты в списке')
+    finally:
+        page.unroute(endpoint)
+
+    welcome_endpoint = '**/api/public/welcome'
+    custom = dict(EVENINGS[2], price='450 ₽ за игру')
+    page.route(welcome_endpoint, lambda route: route.fulfill(content_type='application/json',
+               body=json.dumps({'evening': dict(EVENINGS[0], price=PRICE), 'evenings': EVENINGS[:2] + [custom]})))
+    try:
+        page.goto(origin + 'igry/?evening=e27')
+        expect(page.get_by_role('radio', name='Пятница, 27 ноября')).to_be_checked()
+        expect(page.locator('#join-evening')).to_contain_text('450 ₽ за игру')
+    finally:
+        page.unroute(welcome_endpoint)
+
+    agenda_endpoint = '**/api/public/welcome/agenda'
+    page.route(agenda_endpoint, lambda route: route.abort())
+    try:
+        page.goto(origin + 'igry/')
+        expect(page.locator('.calendar-event')).to_have_count(3)
+        page.locator('[data-evening-id="e27"] a').click()
+        expect(page.get_by_role('radio', name='Пятница, 27 ноября')).to_be_checked()
+        page.route(welcome_endpoint, lambda route: route.abort())
+        try:
+            page.goto(origin + 'igry/')
+            expect(page.locator('#join-root')).to_contain_text('Расписание сейчас не загрузилось')
+            expect(page.locator('#agenda')).not_to_contain_text('Загружаем')
+            expect(page.locator('#agenda a')).to_have_attribute('href', 'https://t.me/Chagina7x')
+        finally:
+            page.unroute(welcome_endpoint)
+    finally:
+        page.unroute(agenda_endpoint)
+
+    context = browser.new_context(java_script_enabled=False, viewport={'width': 390, 'height': 844})
+    try:
+        fallback = context.new_page()
+        fallback.goto(origin + 'igry/')
+        expect(fallback.locator('#join-root noscript a')).to_have_attribute('href', 'https://t.me/Chagina7x')
+        expect(fallback.locator('#join-root noscript')).to_be_visible()
+        expect(fallback.locator('.js-status').first).to_be_hidden()
+    finally:
+        context.close()
+
+
 def check_club_preview(page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.route('**/api/public/welcome/**', lambda route: route.abort())
@@ -448,6 +540,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         check_club_preview(page, origin)
         check_gallery(page, origin)
         check_form(page, origin, server)
+        check_booking(browser, page, origin)
         assert before == server.legacy_requests, 'New release requested an old asset after warming the cache'
         assert not errors, errors
     print(f'{browser_type.name}: {len(VIEWPORTS)} sizes × {len(PAGES)} pages, fresh and old cache, gallery, sign-up, rating', flush=True)

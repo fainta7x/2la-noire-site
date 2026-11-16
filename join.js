@@ -21,6 +21,14 @@
   const radio = (name, value, text, checked) =>
     '<label><input type="radio" name="' + name + '" value="' + escape(value) + '"' + (checked ? ' checked' : '') + '><span>' + escape(text) + '</span></label>';
 
+  const dateRadio = (event, checked) => {
+    const date = new Date(event.starts_at);
+    const parts = dateFormat.formatToParts(date);
+    const part = (type) => parts.find((entry) => entry.type === type)?.value || '';
+    const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'Europe/Moscow' }).format(date);
+    return '<label><input type="radio" name="evening" value="' + escape(event.id) + '" aria-label="' + escape(day(event.starts_at)) + '"' + (checked ? ' checked' : '') + '><span><small>' + escape(weekday) + '</small><strong>' + escape(part('day')) + '</strong><small>' + escape(part('month')) + '</small></span></label>';
+  };
+
   const createVisitorId = () => {
     try {
       let id = localStorage.getItem('welcome_visitor');
@@ -36,9 +44,12 @@
   fetch(api + '/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visitor_id: createVisitorId(), source }) }).catch(() => {});
 
   const mount = (data) => {
-    const evenings = data.evenings?.length ? data.evenings : data.evening ? [data.evening] : [];
+    const available = Array.isArray(data.evenings) && data.evenings.length ? data.evenings : data.evening ? [data.evening] : [];
+    const evenings = available.filter(event => event && typeof event.id === 'string' && Number.isFinite(new Date(event.starts_at).getTime())).sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+    const defaultPrice = typeof data.evening?.price === 'string' ? data.evening.price : '';
     const contactOrganizer = safeLink(data.contacts?.find((entry) => entry.label === 'Telegram')?.url) || organizer;
-    let selected = evenings.find((event) => event.id === data.evening?.id) || evenings[0] || null;
+    document.querySelectorAll('[data-organizer-link]').forEach(link => { link.href = contactOrganizer; });
+    let selected = evenings.find(event => event.id === params.get('evening')) || evenings.find(event => event.id === data.evening?.id) || evenings[0] || null;
     let pendingSeats = null;
     let contactKind = 'telegram';
     const contactDrafts = {};
@@ -46,15 +57,16 @@
     root.innerHTML =
       '<div class="join-layout">' +
         '<div class="join-head">' +
-          (evenings.length > 1 ? '<fieldset class="join-days"><legend>Выбери дату</legend><div class="join-options">' +
-            evenings.map((event) => radio('evening', event.id, day(event.starts_at), event.id === selected.id)).join('') + '</div></fieldset>' : '') +
+          (evenings.length > 0 ? '<fieldset class="join-days"><legend>Выбери дату</legend><div class="join-options join-date-options">' +
+            evenings.map((event) => dateRadio(event, event.id === selected.id)).join('') + '</div></fieldset>' : '') +
           '<div id="join-evening" aria-live="polite"></div>' +
         '</div>' +
         '<div class="join-form-card">' +
-          '<h3 id="join-form-heading">' + (selected ? 'Запись на игру' : 'Узнать о следующей игре') + '</h3>' +
+          '<h3 id="join-form-heading" tabindex="-1">' + (selected ? 'Запись на игру' : 'Узнать о следующей игре') + '</h3>' +
+          '<p class="join-selection" id="join-selection"></p>' +
           '<p class="join-sub" id="join-instructions">' + (selected ? 'Напиши своё имя и как с тобой связаться.' : 'Напишем, когда появится дата.') + '</p>' +
           '<form class="join-form" id="join-form">' +
-            '<label class="join-field">Имя<input id="join-name" type="text" required minlength="2" maxlength="40" autocomplete="given-name"></label>' +
+            '<label class="join-field">Имя<input id="join-name" type="text" required minlength="2" maxlength="40" autocomplete="given-name" placeholder="Как к тебе обращаться"></label>' +
             '<fieldset class="join-kinds"><legend>Где с тобой связаться?</legend><div class="join-options">' +
               Object.entries(contacts).map(([kind, contact]) => radio('contact-kind', kind, contact.title, kind === contactKind)).join('') +
             '</div></fieldset>' +
@@ -98,21 +110,25 @@
       const event = selected;
       const details = root.querySelector('#join-evening');
       const alt = root.querySelector('#join-alt');
+      const selection = root.querySelector('#join-selection');
+      selection.hidden = !event;
+      selection.textContent = event ? day(event.starts_at) + ' · ' + timeFormat.format(new Date(event.starts_at)) : '';
       if (!event) {
         details.innerHTML = '<h3 class="join-heading">Пока нет даты следующей игры</h3>';
         alt.innerHTML = '<a href="' + escape(contactOrganizer) + '">Написать организатору</a>';
         return;
       }
-      const venue = event.venue || {};
+      const venue = event.venue || data.evening?.venue || {};
+      const price = event.price || defaultPrice;
       const map = safeLink(venue.mapUrl);
-      details.innerHTML = '<h3 class="join-heading">' + escape(day(event.starts_at)) + '</h3>' +
+      details.innerHTML = '<p class="join-format">Вечер для новичков</p><h3 class="join-heading">' + escape(day(event.starts_at)) + '</h3>' +
         '<dl class="join-facts"><div><dt>Время</dt><dd>' + escape(event.schedule || timeFormat.format(new Date(event.starts_at))) + '</dd></div>' +
-        '<div><dt>Место</dt><dd>' + escape(venue.name || '') + (venue.address ? '<br>' + escape(venue.address) : '') +
+        '<div><dt>Место</dt><dd>' + escape(venue.name || 'Место уточняется') + (venue.address ? '<br>' + escape(venue.address) : '') +
         (map ? '<br><a href="' + escape(map) + '">Открыть карту</a>' : '') + '</dd></div>' +
-        '<div><dt>Цена</dt><dd>Первые два вечера бесплатно</dd></div></dl>';
+        '<div><dt>Стоимость</dt><dd>' + escape(price || 'Уточни у организатора') + '</dd></div></dl>';
       const telegramUrl = safeLink(event.telegram_url);
-      const vkUrl = safeLink(event.join_url);
-      const options = [telegramUrl && '<a href="' + escape(telegramUrl) + '">Telegram</a>', vkUrl && '<a href="' + escape(vkUrl) + '">ВКонтакте</a>'].filter(Boolean);
+      const appUrl = safeLink(event.join_url);
+      const options = [telegramUrl && '<a href="' + escape(telegramUrl) + '">Telegram</a>', appUrl && '<a href="' + escape(appUrl) + '">Приложение клуба</a>'].filter(Boolean);
       alt.innerHTML = options.length ? 'Другие способы записи: ' + options.join(' · ') : '<a href="' + escape(contactOrganizer) + '">Написать организатору</a>';
     };
     updateEvening();
@@ -128,14 +144,13 @@
         const entries = seats.evening_id === id && Array.isArray(seats.games) ? seats.games : [];
         board.hidden = entries.length === 0;
         boardLabel.textContent = 'Места за столом';
-        board.open = true;
         games.innerHTML = entries.map((game) => {
-          const target = 10;
+          const target = Math.max(1, Math.trunc(Number(game.target) || 10));
           const taken = Math.max(0, Math.trunc(Number(game.taken) || 0));
           const free = Math.max(0, target - taken);
           const meter = target ? '<progress class="join-capacity" aria-label="Занято мест" max="' + target + '" value="' + Math.min(taken, target) + '"></progress>' : '';
           return '<article class="join-game"><h4>Игра ' + escape(game.number) + ' · ' + escape(timeFormat.format(new Date(game.starts_at))) +
-            '</h4><p>Занято: <strong>' + taken + ' из ' + target + '</strong></p><p>Для старта нужно 8 игроков.</p>' + meter +
+            '</h4><p>Занято: <strong>' + taken + ' из ' + target + '</strong></p>' + meter +
             '<p>' + (free ? 'Свободно мест: ' + free : 'Свободных мест нет') + '</p>' +
             (game.people?.length ? '<p>' + game.people.map(escape).join(', ') + '</p>' : '') + '</article>';
         }).join('');
@@ -147,6 +162,7 @@
     };
 
     datePicker?.addEventListener('change', (event) => {
+      if (form.hidden || submit.disabled) return;
       const next = evenings.find((evening) => evening.id === event.target.value);
       if (!next || next.id === selected.id) return;
       pendingSeats?.abort();

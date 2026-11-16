@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Расписание игр и запись — 2LA noire</title>
-  <meta name="description" content="Выбери пятницу и запишись в школу спортивной мафии 2LA noire в Туле. Актуальные даты, время и места.">
+  <meta name="description" content="Расписание спортивной мафии в Туле: вечера для новичков и клубные игры. Выбор даты, условия участия и запись в 2LA noire.">
   <link rel="canonical" href="https://2lamafia.ru/igry/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:site_name" content="2LA noire">
   <meta property="og:title" content="Расписание игр и запись — 2LA noire">
-  <meta property="og:description" content="Выбери пятницу и запишись в школу спортивной мафии 2LA noire в Туле. Актуальные даты, время и места.">
+  <meta property="og:description" content="Расписание спортивной мафии в Туле: вечера для новичков и клубные игры. Выбор даты, условия участия и запись в 2LA noire.">
   <meta property="og:url" content="https://2lamafia.ru/igry/">
   <meta property="og:image" content="https://2lamafia.ru/img/evenings/share.jpg">
   <link rel="icon" href="/img/favicon.png" type="image/png">
@@ -23,25 +23,86 @@
   <script src="/account.js" defer></script>
   <script src="/agenda.js" defer></script>
 </head>
-<body>
+<body class="booking-page">
   <!-- include: header -->
-  <main id="content">
-<section class="section join page-opening" id="schedule" aria-labelledby="join-title">
+  <main id="content" data-editorial>
+    <section class="section booking-opening page-opening" aria-labelledby="join-title">
+      <div class="section-inner booking-opening-layout">
+        <div class="booking-opening-copy">
+          <p class="eyebrow">2LA noire · Тула</p>
+          <h1 id="join-title">Расписание<br>и запись</h1>
+          <p class="booking-lead">Выбери встречу и запишись. На первый вечер можно прийти одному и без опыта.</p>
+          <div class="booking-opening-links">
+            <a class="primary-button" href="#calendar">Выбрать игру <span aria-hidden="true">↓</span></a>
+            <a class="text-link" href="#club-games">Уже играю в клубе <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        <figure class="booking-opening-photo">
+          <img src="/img/evenings/club-10.webp" alt="Участники 2LA noire во время клубной игры" width="1280" height="720" fetchpriority="high">
+        </figure>
+      </div>
+    </section>
+
+    <section class="section booking-calendar" id="calendar" aria-labelledby="calendar-title">
+      <div class="section-inner">
+        <div class="booking-section-heading">
+          <div><p class="eyebrow">Ближайшие встречи</p><h2 id="calendar-title">Выбери игру</h2></div>
+          <p>Для новичков — запись здесь.<br>Для клубных игр — в личном кабинете.</p>
+        </div>
+        <div id="agenda" class="agenda" aria-live="polite" aria-busy="true">
+          <p class="booking-status js-status" role="status">Загружаем расписание…</p>
+          <noscript><p>Даты встреч опубликованы в <a href="https://t.me/mafiatulasport">Telegram клуба</a>. Для записи можно <a href="https://t.me/Chagina7x">написать организатору</a>.</p></noscript>
+        </div>
+        <p class="booking-timezone">Время указано по Туле — МСК.</p>
+      </div>
+    </section>
+
+    <section class="section join booking-registration" id="schedule" aria-labelledby="first-evening-title">
       <div class="section-inner" id="join">
-        
-        <h1 id="join-title">Расписание и запись</h1>
-        <p class="schedule-note section-copy" hidden></p>
+        <div class="booking-section-heading">
+          <div><p class="eyebrow">Первый вечер</p><h2 id="first-evening-title">Записаться на игру</h2></div>
+          <p>Выбери дату и оставь контакт.<br>Личный кабинет для этой записи не нужен.</p>
+        </div>
         <div id="join-root">
           <p class="join-empty js-status" role="status">Загружаем даты игр…</p>
-          <noscript><p class="join-empty">Для записи через сайт нужен JavaScript. <a href="https://t.me/Chagina7x">Напиши организатору</a>.</p></noscript>
+          <noscript><p class="join-empty">Для записи через форму нужен JavaScript. <a href="https://t.me/Chagina7x">Напиши организатору</a> — поможем записаться.</p></noscript>
         </div>
       </div>
     </section>
-    <section class="section"><div class="section-inner"><div id="agenda" class="agenda" hidden></div></div></section>
-    <section class="section"><div class="section-inner about-layout player-paths">
-      <div><h2>Если играешь впервые</h2><p class="section-copy">Перед игрой ведущий объяснит правила и ответит на вопросы.</p><a class="secondary-button" href="/novichkam/">Как пройдёт вечер <span aria-hidden="true">→</span></a></div>
-      <div><h2>Если уже играешь в клубе</h2><p class="section-copy">Клубные игры есть в приложении. Там же можно записаться.</p><a class="secondary-button account-login" href="https://app.2lamafia.ru/player?return=https%3A%2F%2F2lamafia.ru%2F">Открыть приложение <span aria-hidden="true">→</span></a></div>
-    </div></section>
+
+    <section class="section booking-club" id="club-games" aria-labelledby="club-games-title">
+      <div class="section-inner booking-club-layout">
+        <div>
+          <p class="eyebrow">Уже знаком со спортивной мафией?</p>
+          <h2 id="club-games-title">Клубные игры</h2>
+          <p>В расписании они отмечены отдельно. Запись проходит в личном кабинете: открой клубный вечер и выбери игры, на которые сможешь прийти.</p>
+          <div class="booking-opening-links">
+            <a class="primary-button" href="https://app.2lamafia.ru/player">Открыть личный кабинет <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="/klubnye-igry/">О клубных играх <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        <div class="booking-first-visit">
+          <h3>Играешь впервые?</h3>
+          <p>Начни с вечера для новичков. Перед игрой объясним регламент и ответим на вопросы. Собирать свою компанию не нужно.</p>
+          <a class="text-link" href="/novichkam/">Подробнее о первом вечере <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section booking-help" aria-labelledby="booking-help-title">
+      <div class="section-inner booking-help-layout">
+        <div>
+          <h2 id="booking-help-title">Перед встречей</h2>
+          <p>Если что-то осталось непонятным, напиши организатору.</p>
+          <a class="text-link" data-organizer-link href="https://t.me/Chagina7x">Написать в Telegram <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="booking-faq">
+          <details><summary>Как понять, что запись подтверждена?</summary><p>После отправки форма покажет результат. «Ты в списке» означает, что запись подтверждена. Если появится «Заявка получена», место пока не подтверждено — организатор свяжется с тобой по указанному контакту.</p></details>
+          <details><summary>Что делать, если планы изменились?</summary><p><a data-organizer-link href="https://t.me/Chagina7x">Напиши организатору</a>, чтобы отменить или перенести запись.</p></details>
+          <details><summary>Можно прийти с друзьями?</summary><p>Да. Каждый участник может записаться отдельно. Если нужна помощь с записью компании, <a data-organizer-link href="https://t.me/Chagina7x">напиши организатору</a>.</p></details>
+        </div>
+      </div>
+    </section>
   </main>
   <!-- include: footer -->
 </body>
