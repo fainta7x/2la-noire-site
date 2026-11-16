@@ -97,7 +97,9 @@ class SiteHandler(SimpleHTTPRequestHandler):
             self.send_json({'evening': dict(EVENINGS[0], price=PRICE), 'evenings': EVENINGS})
         elif path == '/api/public/welcome/seats':
             self.send_json({'evening_id': self.path.rsplit('=', 1)[-1], 'going': 1, 'games': [
-                {'number': 1, 'starts_at': EVENINGS[0]['starts_at'], 'target': 9, 'taken': 1, 'people': ['Игрок']}
+                {'number': 1, 'starts_at': EVENINGS[0]['starts_at'], 'target': 9, 'taken': 1, 'people': ['Игрок']},
+                {'number': 2, 'starts_at': '2026-11-13T20:00:00+03:00', 'target': 11, 'taken': 3,
+                 'people': ['Второй', 'Очень длинный ник игрока', '<b>Ник</b>']},
             ]})
         elif path == '/api/public/welcome/session':
             self.send_json({'signed_in': False})
@@ -384,19 +386,38 @@ def check_booking(browser, page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin + 'igry/')
     expect(page.locator('#join')).to_be_hidden()
+    roster = page.locator('[data-roster-evening="e13"]')
+    roster.scroll_into_view_if_needed()
+    expect(roster.locator('.roster-seats')).to_be_visible()
+    expect(roster.locator('.roster-seat')).to_have_count(9)
+    expect(roster.locator('.roster-seat.is-taken')).to_have_count(1)
+    expect(roster).to_contain_text('Игрок')
+    expect(roster).to_contain_text('Свободно мест: 8')
+    roster.get_by_role('button', name='20:00 · Игра 2').click()
+    expect(roster.locator('.roster-seat')).to_have_count(11)
+    expect(roster.locator('.roster-seat.is-taken')).to_have_count(3)
+    expect(roster).to_contain_text('<b>Ник</b>')
+    expect(roster.locator('b')).to_have_count(0)
     page.locator('[data-evening-id="e13"] a').click()
     expect(page.locator('.calendar-day:has([data-evening-id="e13"]) #join')).to_be_visible()
     expect(page.locator('input[name="evening"]')).to_have_count(0)
     expect(page.locator('#join-evening')).to_contain_text(PRICE)
-    board = page.locator('.join-board')
-    expect(board).not_to_have_attribute('hidden', '')
-    assert not board.evaluate('(el) => el.open'), 'Seat list pushes the booking form down'
-    board.locator('summary').click()
-    expect(board).to_contain_text('1 из 9')
-    expect(board).to_contain_text('Свободно мест: 8')
-
     page.get_by_label('Имя', exact=True).fill('Тест календаря')
     page.get_by_label('Имя пользователя в Telegram').fill('@calendar_test')
+    page.locator('[data-evening-id="e13"] a').click()
+    expect(page.locator('#join')).to_be_hidden()
+    expect(roster.locator('.roster-seat')).to_have_count(11)
+    expect(roster.locator('.roster-seats')).to_be_visible()
+    page.locator('[data-evening-id="e13"] a').click()
+    expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
+    page.get_by_role('button', name='Свернуть запись', exact=True).click()
+    expect(page.locator('#join')).to_be_hidden()
+    page.locator('[data-evening-id="e13"] a').click()
+    page.get_by_label('Имя', exact=True).focus()
+    page.keyboard.press('Escape')
+    expect(page.locator('#join')).to_be_hidden()
+    expect(page.locator('[data-evening-id="e13"] a')).to_be_focused()
+    page.locator('[data-evening-id="e13"] a').click()
     page.get_by_role('button', name='Выбрать другой вечер').click()
     expect(page.locator('#join')).to_be_hidden()
     expect(page.locator('[data-evening-id="e13"] a')).to_be_focused()
@@ -489,6 +510,25 @@ def check_booking(browser, page, origin):
     expect(page.locator('#join')).to_be_visible()
     expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 13 ноября · 19:00')
     expect(page.locator('#join-evening .join-heading')).to_be_focused()
+
+    # A roster read failure must never look like nine empty places, and must
+    # not disable the separate booking form. Retrying restores actual names.
+    seats_endpoint = '**/api/public/welcome/seats?*'
+    page.route(seats_endpoint, lambda route: route.abort())
+    try:
+        page.goto(origin + 'igry/')
+        failed = page.locator('[data-roster-evening="e13"]')
+        expect(failed).to_contain_text('Состав сейчас не загрузился')
+        expect(failed.locator('.roster-seat')).to_have_count(0)
+        page.locator('[data-evening-id="e13"] a').click()
+        expect(page.get_by_label('Имя', exact=True)).to_be_visible()
+        page.get_by_role('button', name='Свернуть запись', exact=True).click()
+        page.unroute(seats_endpoint)
+        failed.get_by_role('button', name='Повторить', exact=True).click()
+        expect(failed.locator('.roster-seat.is-taken')).to_have_count(1)
+        expect(failed).to_contain_text('Игрок')
+    finally:
+        page.unroute(seats_endpoint)
 
     context = browser.new_context(java_script_enabled=False, viewport={'width': 390, 'height': 844})
     try:

@@ -1,7 +1,7 @@
 (() => {
   const root = document.getElementById('join-root');
   if (!root) return;
-  const { api, read, info, organizer, telegram, safeLink } = window.club;
+  const { api, info, organizer, telegram, safeLink } = window.club;
   const params = new URLSearchParams(location.search);
   const allowedSources = ['vk', 'telegram', 'friend'];
   const source = allowedSources.includes(params.get('src')) ? params.get('src') : 'other';
@@ -42,11 +42,11 @@
     const contactOrganizer = safeLink(data.contacts?.find((entry) => entry.label === 'Telegram')?.url) || organizer;
     document.querySelectorAll('[data-organizer-link]').forEach(link => { link.href = contactOrganizer; });
     let selected = evenings.find(event => event.id === params.get('evening')) || evenings.find(event => event.id === data.evening?.id) || evenings[0] || null;
-    let pendingSeats = null;
     let contactKind = 'telegram';
     const contactDrafts = {};
 
     root.innerHTML =
+      (selected ? '<button type="button" id="join-close" class="join-close">Свернуть запись <span aria-hidden="true">↑</span></button>' : '') +
       '<div class="join-layout">' +
         '<div class="join-head">' +
           '<div id="join-evening" aria-live="polite"></div>' +
@@ -70,7 +70,6 @@
           '<div class="join-done" id="join-result" role="status" tabindex="-1" hidden></div>' +
           '<p class="join-alt" id="join-alt"></p>' +
         '</div>' +
-        '<details class="join-board" hidden><summary id="join-seats-label">Места за столом</summary><div class="join-games"></div></details>' +
       '</div>';
 
     const form = root.querySelector('form');
@@ -80,9 +79,6 @@
     const field = root.querySelector('#join-contact');
     const error = root.querySelector('#join-error');
     const result = root.querySelector('#join-result');
-    const board = root.querySelector('.join-board');
-    const games = board.querySelector('.join-games');
-    const boardLabel = root.querySelector('#join-seats-label');
 
     const setContactField = () => {
       const contact = contacts[contactKind];
@@ -119,34 +115,6 @@
     };
     updateEvening();
 
-    const loadSeats = async () => {
-      if (!selected || pendingSeats) return;
-      const id = selected.id;
-      const controller = new AbortController();
-      pendingSeats = controller;
-      try {
-        const seats = await read('/seats?evening=' + encodeURIComponent(id), { signal: controller.signal });
-        if (controller.signal.aborted || selected.id !== id) return;
-        const entries = seats.evening_id === id && Array.isArray(seats.games) ? seats.games : [];
-        board.hidden = entries.length === 0;
-        boardLabel.textContent = 'Места за столом';
-        games.innerHTML = entries.map((game) => {
-          const target = Math.max(1, Math.trunc(Number(game.target) || 10));
-          const taken = Math.max(0, Math.trunc(Number(game.taken) || 0));
-          const free = Math.max(0, target - taken);
-          const meter = target ? '<progress class="join-capacity" aria-label="Занято мест" max="' + target + '" value="' + Math.min(taken, target) + '"></progress>' : '';
-          return '<article class="join-game"><h4>Игра ' + escape(game.number) + ' · ' + escape(timeFormat.format(new Date(game.starts_at))) +
-            '</h4><p>Занято: <strong>' + taken + ' из ' + target + '</strong></p>' + meter +
-            '<p>' + (free ? 'Свободно мест: ' + free : 'Свободных мест нет') + '</p>' +
-            (game.people?.length ? '<p>' + game.people.map(escape).join(', ') + '</p>' : '') + '</article>';
-        }).join('');
-      } catch {
-        // Keep the last successful update for the current evening.
-      } finally {
-        if (pendingSeats === controller) pendingSeats = null;
-      }
-    };
-
     // The calendar is the only date picker. Keep the mounted form intact when
     // its panel moves between dates, so typed contacts and request state survive.
     window.club.booking = {
@@ -155,15 +123,9 @@
         const next = evenings.find(evening => evening.id === id);
         if (!next || form.hidden || submit.disabled) return false;
         if (next.id !== selected?.id) {
-          pendingSeats?.abort();
-          pendingSeats = null;
           selected = next;
-          board.hidden = true;
-          board.open = false;
-          games.replaceChildren();
           error.textContent = '';
           updateEvening();
-          loadSeats();
         }
         return true;
       }
@@ -234,7 +196,7 @@
         result.focus();
         finished = true;
         window.goal('lead_sent');
-        loadSeats();
+        window.dispatchEvent(new CustomEvent('booking:submitted', { detail: { eveningId: evening?.id } }));
       } catch (failure) {
         error.textContent = (failure instanceof TypeError ? 'Нет связи с сайтом. Попробуй ещё раз.' : failure.message) + ' Другие способы записи указаны ниже.';
       } finally {
@@ -247,10 +209,6 @@
       }
     });
 
-    if (selected) {
-      loadSeats();
-      setInterval(() => { if (!document.hidden) loadSeats(); }, 10000);
-    }
   };
 
   const showFallback = () => {

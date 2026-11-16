@@ -14,7 +14,7 @@
     return text[0].toUpperCase() + text.slice(1);
   };
   const agenda = document.getElementById('agenda');
-  if (agenda) Promise.all([read('/agenda').catch(() => null), info]).then(([data, welcome]) => {
+  if (agenda) Promise.all([read('/agenda').catch(() => null), info]).then(async ([data, welcome]) => {
     const available = Array.isArray(welcome?.evenings) && welcome.evenings.length ? welcome.evenings : welcome?.evening ? [welcome.evening] : [];
     const knownDates = new Set(available.map(event => event.id));
     const fallback = available.map(event => ({ ...event, venue: event.venue?.name || '', title: event.title || 'Вечер для новичков', format: 'NOVICE', format_label: 'Для новичков' }));
@@ -22,6 +22,7 @@
     const items = [...listed, ...fallback.filter(event => !listed.some(item => item?.id === event.id))]
       .filter(item => item && Number.isFinite(new Date(item.starts_at).getTime()))
       .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
+    await window.club.rosters?.prepare(items);
     const cabinet = safeLink(data?.app_url + '/player') || app + '/player';
     const contactOrganizer = safeLink(welcome?.contacts?.find(entry => entry.label === 'Telegram')?.url) || organizer;
     const filters = make('div', undefined, 'booking-filters');
@@ -37,6 +38,15 @@
     const panel = document.getElementById('join');
     const panelHome = document.getElementById('schedule');
     let opened = false;
+
+    const closePanel = () => {
+      const id = window.club.booking?.selectedId;
+      opened = false;
+      render();
+      const trigger = Array.from(list.querySelectorAll('.calendar-event')).find(card => card.dataset.eveningId === id)?.querySelector('.calendar-action');
+      trigger?.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' });
+      trigger?.focus({ preventScroll: true });
+    };
 
     const focusPanel = () => {
       const done = document.getElementById('join-result');
@@ -97,21 +107,29 @@
             link.setAttribute('aria-controls', panel.id);
             link.setAttribute('aria-expanded', String(expanded));
             if (expanded) {
-              link.textContent = 'К форме записи ↓';
-              link.setAttribute('aria-label', 'К форме записи · ' + dateText(item.starts_at, true));
+              link.textContent = 'Свернуть запись ↑';
+              link.setAttribute('aria-label', 'Свернуть запись · ' + dateText(item.starts_at, true));
               row.classList.add('calendar-day-selected');
             }
             link.addEventListener('click', event => {
               const booking = window.club.booking;
               if (!booking) return;
               event.preventDefault();
+              if (opened && booking.selectedId === item.id) {
+                closePanel();
+                return;
+              }
               booking.select(item.id);
               opened = true;
               render();
               focusPanel();
             });
           }
-          card.append(details, link);
+          const copy = make('div', undefined, 'calendar-event-copy');
+          copy.append(details, link);
+          card.append(copy);
+          const roster = window.club.rosters?.mount(item);
+          if (roster) card.append(roster);
           slots.append(card);
           if (opened && item.id === window.club.booking?.selectedId) {
             row.append(heading, slots, panel);
@@ -146,13 +164,13 @@
     agenda.hidden = false;
     agenda.setAttribute('aria-busy', 'false');
     render();
-    document.getElementById('join-change')?.addEventListener('click', () => {
-      const id = window.club.booking.selectedId;
-      opened = false;
-      render();
-      const trigger = Array.from(list.querySelectorAll('.calendar-event')).find(card => card.dataset.eveningId === id)?.querySelector('a');
-      trigger?.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' });
-      trigger?.focus({ preventScroll: true });
+    document.getElementById('join-change')?.addEventListener('click', closePanel);
+    document.getElementById('join-close')?.addEventListener('click', closePanel);
+    panel.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && opened) {
+        event.preventDefault();
+        closePanel();
+      }
     });
     const openFromLink = (fromQuery = false) => {
       const booking = window.club.booking;

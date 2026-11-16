@@ -28,7 +28,9 @@ html.js .js-status { display: block; }
 .calendar-date strong { font-size:2.4rem; letter-spacing:-.04em; }
 .calendar-date span { color:var(--muted); font-size:.9rem; margin-top:4px; }
 .calendar-events { grid-column:2; display:grid; gap:18px; }
-.calendar-event { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:12px 24px; padding-top:18px; border-top:1px solid #e1d7e3; }
+.calendar-event { display:grid; grid-template-columns:minmax(200px,.8fr) minmax(290px,1.2fr); align-items:start; gap:24px 28px; padding-top:24px; border-top:1px solid #e1d7e3; }
+.calendar-event-copy { min-width:0; }
+.calendar-event-copy > .calendar-action { margin-top:18px; }
 .calendar-event:first-child { border-top:0; padding-top:0; }
 .calendar-event :is(h3,h4) { margin:0; font-size:1.2rem; line-height:1.3; letter-spacing:-.015em; }
 .calendar-event :is(h3,h4) time { font-variant-numeric:tabular-nums; }
@@ -48,6 +50,7 @@ html.js .js-status { display: block; }
 .calendar-day > .booking-panel { grid-column:1 / -1; margin:0 -24px -24px; border-radius:0 0 15px 15px; }
 .calendar-day > .booking-panel:not(:last-child) { margin-bottom:0; border-radius:0; }
 .booking-calendar .booking-panel a { color:var(--link); }
+.join-close { display:flex; align-items:center; gap:10px; min-height:44px; margin:0 0 20px auto; padding:8px 12px; border:1px solid var(--line); border-radius:100px; color:var(--muted); background:transparent; cursor:pointer; font-size:.88rem; }
 .join-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; gap:28px; }
 .join-head { padding:6px 14px 0 0; min-width:0; }
 .join-form-card { min-width:0; }
@@ -86,13 +89,27 @@ html.js .js-status { display: block; }
 .join-done strong { font-size:1.2rem; }
 .join-done p { margin:10px 0 0; color:var(--muted); }
 .join-done a { color:var(--link); text-decoration:underline; }
-.join-board { grid-column:1 / -1; border-top:1px solid var(--line); padding-top:12px; }
-.join-board summary { min-height:48px; padding:12px 0; cursor:pointer; color:var(--muted); }
-.join-games { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px; margin-top:10px; }
-.join-game { padding:18px; background:var(--ink-raised); border:1px solid var(--line); border-radius:12px; }
-.join-game h4 { margin:0; font-size:1rem; }
-.join-game p { margin:6px 0 0; color:var(--muted); overflow-wrap:anywhere; }
-.join-capacity { width:100%; height:9px; accent-color:var(--violet-light); margin-top:12px; }
+.evening-roster { --text:#faf5f2; --muted:#d1c2dd; --line:#5b456c; color:var(--text); background:linear-gradient(145deg,#2a1c36,#18121f); border:1px solid #513c62; border-radius:18px; width:100%; max-width:620px; padding:clamp(14px,1.5vw,22px); justify-self:end; }
+.roster-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 14px; }
+.roster-title { margin:0; font-size:.9rem; font-weight:700; }
+.roster-count { margin:0; color:#e6c68e; font-size:.78rem; }
+.roster-games { display:flex; flex-wrap:wrap; gap:6px; margin:14px 0; }
+.roster-games button,.evening-roster > button { min-height:44px; padding:8px 10px; border:1px solid #695079; border-radius:8px; color:#d8cce1; background:#21172d; cursor:pointer; font-size:.76rem; }
+.roster-games button[aria-pressed="true"] { background:#7045ab; border-color:#c7a4fb; color:#fff; box-shadow:inset 0 0 0 1px #c7a4fb; }
+.roster-map { position:relative; isolation:isolate; margin-top:6px; }
+.roster-felt { position:absolute; inset:12px 12%; border:6px solid #684b60; border-radius:48%; background:radial-gradient(ellipse at 50% 35%,#503360,#251630 75%); box-shadow:0 12px 24px #0005,inset 0 0 0 2px #ac7c6c55,inset 0 0 28px #100b1b; z-index:-1; }
+.roster-felt span { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); white-space:pre-line; text-align:center; font-size:.78rem; line-height:1.45; font-weight:750; letter-spacing:.08em; color:#dfbd8680; }
+.roster-seats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:clamp(38px,5vw,66px); row-gap:10px; margin:0; padding:8px 0; list-style:none; }
+.roster-seat { display:flex; align-items:center; gap:8px; min-width:0; min-height:44px; padding:8px 10px; border:1px solid #64516d; border-radius:10px; background:#20172dee; box-shadow:0 4px 10px #0003; }
+.roster-lamp { width:10px; height:10px; flex:0 0 10px; border:1px solid #7e6d8c; border-radius:50%; background:#3d3246; }
+.roster-nickname { min-width:0; font-size:.8rem; line-height:1.4; color:#c9bcd3; overflow-wrap:anywhere; }
+.roster-seat.is-taken { border-color:#aa8259; background:#3a2931f5; }
+.roster-seat.is-taken .roster-lamp { border-color:#fff0cf; background:#ffd28a; box-shadow:0 0 0 4px #f3c37615,0 0 15px #f3c376a0,inset 0 0 4px #fff8e4; }
+.roster-seat.is-taken .roster-nickname { color:#fff2df; font-weight:650; }
+.roster-footer { display:flex; flex-direction:column; gap:5px; margin-top:14px; }
+.roster-free { margin:0; color:#e6c68e; font-size:.8rem; }
+.roster-note { margin:0; color:#bcacc9; font-size:.75rem; }
+.roster-status { margin:0; min-height:220px; display:flex; align-items:center; color:var(--muted); font-size:.88rem; }
 .booking-club { border:0; background:radial-gradient(ellipse at 5% 0,#53307450,transparent 70%),#1b1223; }
 .booking-club-layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:clamp(28px,6vw,80px); }
 .booking-club h2 { margin:0; }
@@ -107,6 +124,10 @@ html.js .js-status { display: block; }
 .booking-faq summary { cursor:pointer; min-height:48px; padding:16px 0; font-weight:650; }
 .booking-faq details p { margin:0 0 20px; }
 .booking-faq a { color:var(--link); text-decoration:underline; text-underline-offset:3px; }
+@media (max-width:1080px) {
+ .calendar-event { grid-template-columns:minmax(0,1fr); }
+ .evening-roster { justify-self:center; }
+}
 @media (max-width:900px) {
  .booking-opening-layout { grid-template-columns:minmax(0,1fr); }
  .booking-opening-photo { max-width:100%; }
@@ -133,7 +154,6 @@ html.js .js-status { display: block; }
  .join-layout { grid-template-columns:minmax(0,1fr); gap:24px; }
  .join-head { padding:0; }
  .join-form-card { grid-column:auto; grid-row:auto; }
- .join-board { grid-column:auto; }
  .join-facts > div { grid-template-columns:70px minmax(0,1fr); gap:12px; }
  .booking-club-layout,.booking-help-layout { grid-template-columns:minmax(0,1fr); }
  .booking-first-visit { padding-left:20px; }
