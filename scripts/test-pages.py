@@ -243,12 +243,15 @@ def check_layout(page, origin, width, height, snapshots=None):
         assert not layout['old'] and 'hero-table' not in layout['background']
         assert layout['title']['left'] >= layout['hero']['left'] - 1, f'Headline overflow at {width}: {layout}'
         assert layout['title']['right'] <= layout['hero']['right'] + 1, f'Headline overflow at {width}: {layout}'
-        # The photo is a full-width banner behind the copy, not a framed card.
-        assert abs(layout['figure']['left']) <= 1 and layout['figure']['right'] >= layout['viewport'] - 18, f'Hero photo is not full width at {width}: {layout}'
-        assert layout['hero']['top'] >= layout['figure']['top'] and layout['hero']['bottom'] <= layout['figure']['bottom'], f'Hero copy outside photo at {width}'
-        copy_center = (layout['hero']['left'] + layout['hero']['right']) / 2
-        photo_center = (layout['figure']['left'] + layout['figure']['right']) / 2
-        assert abs(copy_center - photo_center) <= 12, f'Hero misaligned at {width}: {layout}'
+        # Copy and photography occupy separate areas: no text over the people.
+        assert layout['hero']['top'] >= layout['banner']['top'] - 1
+        assert layout['hero']['bottom'] <= layout['banner']['bottom'] + 1
+        assert layout['figure']['right'] >= layout['viewport'] - 18
+        if width > 760:
+            assert layout['hero']['right'] <= layout['figure']['left'] + 1, f'Copy covers photo at {width}: {layout}'
+        else:
+            assert abs(layout['figure']['left']) <= 1
+            assert layout['hero']['bottom'] <= layout['figure']['top'] + 1, f'Mobile copy covers photo at {width}: {layout}'
         if snapshots and width in (390, 1891):
             gallery = page.locator('.home-gallery')
             gallery.scroll_into_view_if_needed()
