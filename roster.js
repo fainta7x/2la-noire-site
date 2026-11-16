@@ -14,20 +14,20 @@
 
   const draw = record => {
     const game = record.games?.find(item => item.number === record.selected) || record.games?.[0];
+    const novice = record.event.format === 'NOVICE';
+    const minimum = novice ? 8 : 10;
     const main = make('span', undefined, 'attendance-count');
     const note = make('small', undefined, 'attendance-note');
     if (game) {
       record.selected = game.number;
-      main.textContent = 'Записались ' + game.taken + ' из ' + game.target;
-      note.textContent = 'Игра ' + game.number + ' · ' + time.format(new Date(game.starts_at));
+      main.textContent = 'Записались ' + game.taken;
+      note.textContent = 'Игра ' + game.number + ' · ' + time.format(new Date(game.starts_at)) + ' · минимум ' + minimum;
     } else {
-      const free = record.event.free_seats == null ? null : number(record.event.free_seats);
-      main.textContent = free == null ? (record.status === 'loading' ? 'Загружаем запись…' : 'Запись открыта') : 'Свободно мест: ' + free;
-      note.textContent = record.event.format === 'NOVICE' ? 'Для новичков' : 'Через личный кабинет';
+      main.textContent = novice ? (record.status === 'loading' ? 'Загружаем запись…' : 'Запись открыта') : 'Запись в кабинете';
+      note.textContent = 'Минимум ' + minimum + ' игроков';
     }
     record.header.replaceChildren(main, note);
     if (!game) {
-      const novice = record.event.format === 'NOVICE';
       const message = record.status === 'loading' ? 'Загружаем участников…' : novice ? 'Список участников можно уточнить у организатора.' : 'Состав и запись доступны в личном кабинете.';
       record.root.replaceChildren(make('p', message, 'roster-status'));
       if (novice && record.status !== 'loading') {
@@ -40,6 +40,7 @@
     }
     const focused = record.root.contains(document.activeElement) ? document.activeElement.dataset.game : null;
     const heading = make('h4', 'Участники', 'roster-title');
+    const requirement = make('p', novice ? 'За столом — от 8 до 10 игроков.' : 'Для игры нужно минимум 10 игроков.', 'roster-requirement');
     const controls = make('div', undefined, 'roster-games');
     controls.setAttribute('role', 'group');
     controls.setAttribute('aria-label', 'Игры вечера');
@@ -59,7 +60,7 @@
     participants.setAttribute('aria-label', 'Участники игры ' + game.number);
     game.people.forEach(name => participants.append(make('li', name, 'roster-person')));
     const members = game.people.length ? participants : make('p', game.taken ? 'Записались: ' + game.taken + '. Ники можно уточнить у организатора.' : 'Пока никто не записался.', 'roster-empty');
-    record.root.replaceChildren(heading, controls, members);
+    record.root.replaceChildren(heading, requirement, controls, members);
     if (focused) Array.from(record.root.querySelectorAll('[data-game]')).find(node => node.dataset.game === focused)?.focus({ preventScroll: true });
   };
 
@@ -75,8 +76,10 @@
     try {
       const data = await read('/seats?evening=' + encodeURIComponent(record.event.id), { signal: controller.signal });
       if (data.evening_id === record.event.id && Array.isArray(data.games)) {
-        const games = data.games.filter(game => Number.isFinite(new Date(game.starts_at).getTime()) && number(game.target) > 0 && number(game.taken) != null).map(game => ({
-          number: game.number, starts_at: game.starts_at, target: number(game.target), taken: number(game.taken),
+        // `target` is a recruitment threshold including the judge. The public
+        // count uses the server's player-only `taken`, never that denominator.
+        const games = data.games.filter(game => game && Number.isFinite(new Date(game.starts_at).getTime()) && game.taken != null && number(game.taken) != null).map(game => ({
+          number: game.number, starts_at: game.starts_at, taken: number(game.taken),
           people: Array.isArray(game.people) ? game.people.filter(name => typeof name === 'string') : []
         }));
         const signature = JSON.stringify(games);
