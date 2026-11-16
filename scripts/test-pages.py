@@ -206,11 +206,11 @@ def check_layout(page, origin, width, height, snapshots=None):
             continue
         # Every chapter must remain reachable and its photograph readable on phones.
         nav_links = page.locator('.chapter-nav-inner a')
-        assert nav_links.count() == 5
+        assert nav_links.count() == 4
         if width <= 760:
-            nav_boxes = [nav_links.nth(i).bounding_box() for i in range(5)]
+            nav_boxes = [nav_links.nth(i).bounding_box() for i in range(4)]
             assert all(b and b['x'] >= -2 and b['x'] + b['width'] <= width + 2 for b in nav_boxes), (width, nav_boxes)
-            assert nav_boxes[4]['y'] > nav_boxes[0]['y'], (width, nav_boxes)
+            assert nav_boxes[3]['y'] > nav_boxes[0]['y'], (width, nav_boxes)
         for link in nav_links.all():
             assert page.locator(link.get_attribute('href')).count() == 1
         for photo in page.locator('.story-photo').all():
@@ -271,7 +271,7 @@ def check_home_story(browser, page, origin):
         page.evaluate('document.documentElement.style.scrollBehavior = "auto"')
         for link in page.locator('.chapter-nav a').all():
             link.click()
-            heading = page.locator(link.get_attribute('href')).get_by_role('heading', level=2).first
+            heading = page.locator(link.get_attribute('href')).get_by_role('heading').first
             expect(heading).to_be_in_viewport()
             assert heading.bounding_box()['y'] >= page.locator('.chapter-nav').bounding_box()['y'] + page.locator('.chapter-nav').bounding_box()['height'] - 2
     finally:

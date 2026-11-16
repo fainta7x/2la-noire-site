@@ -71,7 +71,7 @@
   document.querySelectorAll('[data-motion-section]').forEach((section) => {
     const candidates = [
       section.querySelector('.section-kicker'),
-      section.querySelector('h2'),
+      section.querySelector('.story-heading :is(h2, h3)'),
       section.querySelector('.story-copy'),
       section.querySelector('.story-photo'),
       ...section.querySelectorAll('.player-paths > div, .editorial-gallery .photo-preview')

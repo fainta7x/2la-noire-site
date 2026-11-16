@@ -822,3 +822,42 @@ footer { border-top: 1px solid var(--line); }
   .home-story .story-join-paths .primary-button,
   .home-story .story-join-paths .secondary-button { font-size: .92rem; }
 }
+
+/* Three connected chapters: game, lasting hobby/sport, community/joining. */
+.home-story .story-chapter { border-top: 1px solid var(--line); }
+.home-story .story-chapter-game { background: #110e16; }
+.home-story .story-chapter-sport { background: #211726; }
+.home-story .story-chapter-community { background: #151019; }
+.home-story .story-chapter > .story-section { border: 0; background: transparent; }
+.home-story .story-chapter > .story-section:first-child { padding-bottom: clamp(32px, 4vw, 56px); }
+.home-story .story-chapter > .story-continuation { padding-top: 0; }
+.home-story .story-continuation .story-heading { margin-bottom: 28px; }
+.home-story .story-continuation .story-heading::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  margin-bottom: 28px;
+  background: var(--link);
+}
+.home-story .story-continuation .story-heading h3 {
+  max-width: 28ch;
+  margin: 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.75rem);
+  line-height: 1.15;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+.home-story .story-copy .story-bridge { color: var(--text); margin-top: 28px; }
+.home-story .story-join-paths h4 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: -.025em;
+}
+@media (max-width: 760px) {
+  .home-story .chapter-nav-inner { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-story .story-join-paths h4 { font-size: 1.7rem; }
+  .home-story .story-continuation .story-heading { margin-bottom: 24px; }
+}
