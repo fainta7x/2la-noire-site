@@ -46,27 +46,19 @@
     <section class="section booking-calendar" id="calendar" aria-labelledby="calendar-title">
       <div class="section-inner">
         <div class="booking-section-heading">
-          <div><p class="eyebrow">Ближайшие встречи</p><h2 id="calendar-title">Выбери игру</h2></div>
-          <p>Для новичков — запись здесь.<br>Для клубных игр — в личном кабинете.</p>
+          <div><p class="eyebrow">Расписание</p><h2 id="calendar-title">Ближайшие игры</h2></div>
+          <p>Для первого визита выбери вечер для новичков. На клубные игры записываемся через личный кабинет.</p>
         </div>
-        <div id="agenda" class="agenda" aria-live="polite" aria-busy="true">
+        <div id="agenda" class="agenda" aria-busy="true">
           <p class="booking-status js-status" role="status">Загружаем расписание…</p>
           <noscript><p>Даты встреч опубликованы в <a href="https://t.me/mafiatulasport">Telegram клуба</a>. Для записи можно <a href="https://t.me/Chagina7x">написать организатору</a>.</p></noscript>
         </div>
+        <div id="schedule">
+          <div id="join" class="booking-panel" role="region" aria-label="Запись на вечер для новичков" hidden>
+            <div id="join-root"><p class="join-empty" role="status">Загружаем условия вечера…</p></div>
+          </div>
+        </div>
         <p class="booking-timezone">Время указано по Туле — МСК.</p>
-      </div>
-    </section>
-
-    <section class="section join booking-registration" id="schedule" aria-labelledby="first-evening-title">
-      <div class="section-inner" id="join">
-        <div class="booking-section-heading">
-          <div><p class="eyebrow">Первый вечер</p><h2 id="first-evening-title">Записаться на игру</h2></div>
-          <p>Выбери дату и оставь контакт.<br>Личный кабинет для этой записи не нужен.</p>
-        </div>
-        <div id="join-root">
-          <p class="join-empty js-status" role="status">Загружаем даты игр…</p>
-          <noscript><p class="join-empty">Для записи через форму нужен JavaScript. <a href="https://t.me/Chagina7x">Напиши организатору</a> — поможем записаться.</p></noscript>
-        </div>
       </div>
     </section>
 

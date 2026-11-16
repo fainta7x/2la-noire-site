@@ -21,14 +21,6 @@
   const radio = (name, value, text, checked) =>
     '<label><input type="radio" name="' + name + '" value="' + escape(value) + '"' + (checked ? ' checked' : '') + '><span>' + escape(text) + '</span></label>';
 
-  const dateRadio = (event, checked) => {
-    const date = new Date(event.starts_at);
-    const parts = dateFormat.formatToParts(date);
-    const part = (type) => parts.find((entry) => entry.type === type)?.value || '';
-    const weekday = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', timeZone: 'Europe/Moscow' }).format(date);
-    return '<label><input type="radio" name="evening" value="' + escape(event.id) + '" aria-label="' + escape(day(event.starts_at)) + '"' + (checked ? ' checked' : '') + '><span><small>' + escape(weekday) + '</small><strong>' + escape(part('day')) + '</strong><small>' + escape(part('month')) + '</small></span></label>';
-  };
-
   const createVisitorId = () => {
     try {
       let id = localStorage.getItem('welcome_visitor');
@@ -57,14 +49,12 @@
     root.innerHTML =
       '<div class="join-layout">' +
         '<div class="join-head">' +
-          (evenings.length > 0 ? '<fieldset class="join-days"><legend>Выбери дату</legend><div class="join-options join-date-options">' +
-            evenings.map((event) => dateRadio(event, event.id === selected.id)).join('') + '</div></fieldset>' : '') +
           '<div id="join-evening" aria-live="polite"></div>' +
+          (selected ? '<button type="button" class="join-change" id="join-change">Выбрать другой вечер <span aria-hidden="true">↑</span></button>' : '') +
         '</div>' +
         '<div class="join-form-card">' +
-          '<h3 id="join-form-heading" tabindex="-1">' + (selected ? 'Запись на игру' : 'Узнать о следующей игре') + '</h3>' +
-          '<p class="join-selection" id="join-selection"></p>' +
-          '<p class="join-sub" id="join-instructions">' + (selected ? 'Напиши своё имя и как с тобой связаться.' : 'Напишем, когда появится дата.') + '</p>' +
+          '<h3 id="join-form-heading" tabindex="-1">' + (selected ? 'Оставь контакт' : 'Узнать о следующей игре') + '</h3>' +
+          '<p class="join-sub" id="join-instructions">' + (selected ? 'Напиши своё имя и как с тобой связаться. Личный кабинет для этой записи не нужен.' : 'Напишем, когда появится дата.') + '</p>' +
           '<form class="join-form" id="join-form">' +
             '<label class="join-field">Имя<input id="join-name" type="text" required minlength="2" maxlength="40" autocomplete="given-name" placeholder="Как к тебе обращаться"></label>' +
             '<fieldset class="join-kinds"><legend>Где с тобой связаться?</legend><div class="join-options">' +
@@ -93,7 +83,6 @@
     const board = root.querySelector('.join-board');
     const games = board.querySelector('.join-games');
     const boardLabel = root.querySelector('#join-seats-label');
-    const datePicker = root.querySelector('.join-days');
 
     const setContactField = () => {
       const contact = contacts[contactKind];
@@ -110,9 +99,6 @@
       const event = selected;
       const details = root.querySelector('#join-evening');
       const alt = root.querySelector('#join-alt');
-      const selection = root.querySelector('#join-selection');
-      selection.hidden = !event;
-      selection.textContent = event ? day(event.starts_at) + ' · ' + timeFormat.format(new Date(event.starts_at)) : '';
       if (!event) {
         details.innerHTML = '<h3 class="join-heading">Пока нет даты следующей игры</h3>';
         alt.innerHTML = '<a href="' + escape(contactOrganizer) + '">Написать организатору</a>';
@@ -121,7 +107,7 @@
       const venue = event.venue || data.evening?.venue || {};
       const price = event.price || defaultPrice;
       const map = safeLink(venue.mapUrl);
-      details.innerHTML = '<p class="join-format">Вечер для новичков</p><h3 class="join-heading">' + escape(day(event.starts_at)) + '</h3>' +
+      details.innerHTML = '<p class="join-format">Вечер для новичков</p><h3 class="join-heading" tabindex="-1">' + escape(day(event.starts_at)) + ' · ' + escape(timeFormat.format(new Date(event.starts_at))) + '</h3>' +
         '<dl class="join-facts"><div><dt>Время</dt><dd>' + escape(event.schedule || timeFormat.format(new Date(event.starts_at))) + '</dd></div>' +
         '<div><dt>Место</dt><dd>' + escape(venue.name || 'Место уточняется') + (venue.address ? '<br>' + escape(venue.address) : '') +
         (map ? '<br><a href="' + escape(map) + '">Открыть карту</a>' : '') + '</dd></div>' +
@@ -161,19 +147,28 @@
       }
     };
 
-    datePicker?.addEventListener('change', (event) => {
-      if (form.hidden || submit.disabled) return;
-      const next = evenings.find((evening) => evening.id === event.target.value);
-      if (!next || next.id === selected.id) return;
-      pendingSeats?.abort();
-      pendingSeats = null;
-      selected = next;
-      board.hidden = true;
-      board.open = false;
-      games.replaceChildren();
-      updateEvening();
-      loadSeats();
-    });
+    // The calendar is the only date picker. Keep the mounted form intact when
+    // its panel moves between dates, so typed contacts and request state survive.
+    window.club.booking = {
+      get selectedId() { return selected?.id; },
+      select(id) {
+        const next = evenings.find(evening => evening.id === id);
+        if (!next || form.hidden || submit.disabled) return false;
+        if (next.id !== selected?.id) {
+          pendingSeats?.abort();
+          pendingSeats = null;
+          selected = next;
+          board.hidden = true;
+          board.open = false;
+          games.replaceChildren();
+          error.textContent = '';
+          updateEvening();
+          loadSeats();
+        }
+        return true;
+      }
+    };
+    if (!selected) root.closest('.booking-panel').hidden = false;
     form.querySelector('.join-kinds').addEventListener('change', (event) => {
       contactDrafts[contactKind] = field.value;
       contactKind = event.target.value;
@@ -207,7 +202,6 @@
       submit.disabled = true;
       submit.textContent = 'Отправляем…';
       form.setAttribute('aria-busy', 'true');
-      if (datePicker) datePicker.disabled = true;
       form.querySelector('.join-kinds').disabled = true;
       let finished = false;
       try {
@@ -246,7 +240,6 @@
       } finally {
         form.removeAttribute('aria-busy');
         if (!finished) {
-          if (datePicker) datePicker.disabled = false;
           form.querySelector('.join-kinds').disabled = false;
           submit.disabled = false;
           submit.textContent = submitLabel;
@@ -262,6 +255,7 @@
 
   const showFallback = () => {
     root.innerHTML = '<p class="join-empty" role="status">Расписание сейчас не загрузилось. <a href="' + organizer + '">Напиши организатору</a> или проверь анонсы в <a href="' + telegram + '">Telegram клуба</a>.</p>';
+    root.closest('.booking-panel').hidden = false;
   };
   info.then((data) => data ? mount(data) : showFallback()).catch(showFallback);
 })();

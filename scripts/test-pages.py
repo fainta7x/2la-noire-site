@@ -197,7 +197,8 @@ def check_layout(page, origin, width, height, snapshots=None):
             for destination in ('klubnye-igry', 'rating', 'sezony', 'turniry'):
                 expect(page.locator(f'.club-grid a.text-link[href="/{destination}/"]:not(.club-preview a)')).to_be_visible()
         if route == 'igry/':
-            expect(page.get_by_role('radio', name='Пятница, 13 ноября')).to_be_visible()
+            expect(page.locator('[data-evening-id="e13"] a')).to_be_visible()
+            expect(page.locator('#join')).to_be_hidden()
         if route == 'rating/':
             expect(page.get_by_role('table', name='Таблица игроков')).to_be_visible()
         if snapshots and width in (390, 1891):
@@ -358,11 +359,11 @@ def check_gallery(page, origin):
 def check_form(page, origin, server):
     page.goto(origin, wait_until='domcontentloaded')
     page.locator('.main-nav').get_by_role('link', name='Запись на игру', exact=True).click()
+    page.locator('[data-evening-id="e20"] a').focus()
+    page.keyboard.press('Enter')
     page.get_by_label('Имя', exact=True).fill('Тест формы')
     page.get_by_label('Имя пользователя в Telegram').fill('@test_username')
-    page.get_by_role('radio', name='Пятница, 20 ноября').focus()
-    page.keyboard.press('Space')
-    expect(page.locator('#join-evening').get_by_role('heading', name='Пятница, 20 ноября', exact=True)).to_be_visible()
+    expect(page.locator('#join-evening').get_by_role('heading')).to_have_text('Пятница, 20 ноября · 19:00')
     page.get_by_role('radio', name='Телефон').focus()
     page.keyboard.press('Space')
     expect(page.get_by_label('Номер телефона')).to_be_visible()
@@ -382,6 +383,10 @@ def check_form(page, origin, server):
 def check_booking(browser, page, origin):
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(origin + 'igry/')
+    expect(page.locator('#join')).to_be_hidden()
+    page.locator('[data-evening-id="e13"] a').click()
+    expect(page.locator('.calendar-day:has([data-evening-id="e13"]) #join')).to_be_visible()
+    expect(page.locator('input[name="evening"]')).to_have_count(0)
     expect(page.locator('#join-evening')).to_contain_text(PRICE)
     board = page.locator('.join-board')
     expect(board).not_to_have_attribute('hidden', '')
@@ -390,19 +395,29 @@ def check_booking(browser, page, origin):
     expect(board).to_contain_text('1 из 9')
     expect(board).to_contain_text('Свободно мест: 8')
 
+    page.get_by_label('Имя', exact=True).fill('Тест календаря')
+    page.get_by_label('Имя пользователя в Telegram').fill('@calendar_test')
+    page.get_by_role('button', name='Выбрать другой вечер').click()
+    expect(page.locator('#join')).to_be_hidden()
+    expect(page.locator('[data-evening-id="e13"] a')).to_be_focused()
+    expect(page.locator('[data-evening-id="e13"] a')).to_have_attribute('aria-expanded', 'false')
+    page.locator('[data-evening-id="e13"] a').click()
+    expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
+
     filters = page.get_by_role('group', name='Формат игры')
     filters.get_by_role('button', name='Клубные', exact=True).click()
     expect(page.locator('.calendar-event')).to_have_count(1)
+    expect(page.locator('#join')).to_be_hidden()
     expect(page.locator('.calendar-event a')).to_have_attribute('href', 'https://app.2lamafia.ru/player')
     filters.get_by_role('button', name='Для новичков', exact=True).click()
-    expect(page.locator('.calendar-event')).to_have_count(2)
+    expect(page.locator('.calendar-event')).to_have_count(3)
     expect(filters.get_by_role('button', name='Для новичков')).to_have_attribute('aria-pressed', 'true')
-    page.get_by_label('Имя', exact=True).fill('Тест календаря')
-    page.get_by_label('Имя пользователя в Telegram').fill('@calendar_test')
+    expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
     page.locator('[data-evening-id="e20"] a').click()
-    expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_checked()
-    expect(page.locator('#join-selection')).to_have_text('Пятница, 20 ноября · 19:00')
-    expect(page.locator('#join-form-heading')).to_be_focused()
+    expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 20 ноября · 19:00')
+    expect(page.locator('.calendar-day:has([data-evening-id="e20"]) #join')).to_be_visible()
+    expect(page.locator('[data-evening-id="e20"] a')).to_have_attribute('aria-expanded', 'true')
+    expect(page.locator('#join-evening .join-heading')).to_be_focused()
     expect(page.get_by_label('Имя', exact=True)).to_have_value('Тест календаря')
     expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
 
@@ -414,13 +429,13 @@ def check_booking(browser, page, origin):
     try:
         with page.expect_request(endpoint) as sent:
             page.get_by_role('button', name='Записаться на игру').click()
-        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_disabled()
+        expect(page.locator('#join-form')).to_have_attribute('aria-busy', 'true')
         assert sent.value.post_data_json['evening_id'] == 'e20'
         page.locator('[data-evening-id="e13"] a').click()
-        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_checked()
+        expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 20 ноября · 19:00')
         pending.pop(0).fulfill(status=503, content_type='application/json', body='{"error":"Попробуй позже"}')
         expect(page.locator('#join-error')).to_contain_text('Попробуй позже')
-        expect(page.get_by_role('radio', name='Пятница, 20 ноября')).to_be_enabled()
+        expect(page.get_by_role('button', name='Записаться на игру')).to_be_enabled()
         expect(page.get_by_label('Имя пользователя в Telegram')).to_have_value('@calendar_test')
         # Only the first response needs to stay pending. Let the retry receive
         # its response through the route handler, regardless of browser timing.
@@ -431,6 +446,11 @@ def check_booking(browser, page, origin):
         expect(page.locator('#join-result')).to_contain_text('Заявка получена')
         expect(page.locator('#join-result')).to_contain_text('Место пока не подтверждено')
         expect(page.locator('#join-result')).not_to_contain_text('Ты в списке')
+        filters.get_by_role('button', name='Клубные', exact=True).click()
+        expect(page.locator('#join')).to_be_hidden()
+        filters.get_by_role('button', name='Для новичков', exact=True).click()
+        expect(page.locator('#join-result')).to_be_visible()
+        expect(page.locator('#join-result')).to_contain_text('Заявка получена')
     finally:
         page.unroute(endpoint)
 
@@ -440,7 +460,8 @@ def check_booking(browser, page, origin):
                body=json.dumps({'evening': dict(EVENINGS[0], price=PRICE), 'evenings': EVENINGS[:2] + [custom]})))
     try:
         page.goto(origin + 'igry/?evening=e27')
-        expect(page.get_by_role('radio', name='Пятница, 27 ноября')).to_be_checked()
+        expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 27 ноября · 19:00')
+        expect(page.locator('.calendar-day:has([data-evening-id="e27"]) #join')).to_be_visible()
         expect(page.locator('#join-evening')).to_contain_text('450 ₽ за игру')
     finally:
         page.unroute(welcome_endpoint)
@@ -451,7 +472,7 @@ def check_booking(browser, page, origin):
         page.goto(origin + 'igry/')
         expect(page.locator('.calendar-event')).to_have_count(3)
         page.locator('[data-evening-id="e27"] a').click()
-        expect(page.get_by_role('radio', name='Пятница, 27 ноября')).to_be_checked()
+        expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 27 ноября · 19:00')
         page.route(welcome_endpoint, lambda route: route.abort())
         try:
             page.goto(origin + 'igry/')
@@ -463,12 +484,18 @@ def check_booking(browser, page, origin):
     finally:
         page.unroute(agenda_endpoint)
 
+    page.goto(origin)
+    page.goto(origin + 'igry/#join')
+    expect(page.locator('#join')).to_be_visible()
+    expect(page.locator('#join-evening .join-heading')).to_have_text('Пятница, 13 ноября · 19:00')
+    expect(page.locator('#join-evening .join-heading')).to_be_focused()
+
     context = browser.new_context(java_script_enabled=False, viewport={'width': 390, 'height': 844})
     try:
         fallback = context.new_page()
         fallback.goto(origin + 'igry/')
-        expect(fallback.locator('#join-root noscript a')).to_have_attribute('href', 'https://t.me/Chagina7x')
-        expect(fallback.locator('#join-root noscript')).to_be_visible()
+        expect(fallback.locator('#agenda noscript a').last).to_have_attribute('href', 'https://t.me/Chagina7x')
+        expect(fallback.locator('#agenda noscript')).to_be_visible()
         expect(fallback.locator('.js-status').first).to_be_hidden()
     finally:
         context.close()

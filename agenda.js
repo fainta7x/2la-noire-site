@@ -18,7 +18,8 @@
     const available = Array.isArray(welcome?.evenings) && welcome.evenings.length ? welcome.evenings : welcome?.evening ? [welcome.evening] : [];
     const knownDates = new Set(available.map(event => event.id));
     const fallback = available.map(event => ({ ...event, venue: event.venue?.name || '', title: event.title || 'Вечер для новичков', format: 'NOVICE', format_label: 'Для новичков' }));
-    const items = (Array.isArray(data?.evenings) ? data.evenings : fallback)
+    const listed = Array.isArray(data?.evenings) ? data.evenings : [];
+    const items = [...listed, ...fallback.filter(event => !listed.some(item => item?.id === event.id))]
       .filter(item => item && Number.isFinite(new Date(item.starts_at).getTime()))
       .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at));
     const cabinet = safeLink(data?.app_url + '/player') || app + '/player';
@@ -33,8 +34,24 @@
     const dayFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', weekday: 'long', timeZone: 'Europe/Moscow' });
     const timeFormat = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow' });
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const panel = document.getElementById('join');
+    const panelHome = document.getElementById('schedule');
+    let opened = false;
+
+    const focusPanel = () => {
+      const done = document.getElementById('join-result');
+      const focus = done && !done.hidden ? done : panel.querySelector('.join-heading, #join-form-heading');
+      panel.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+      focus?.focus({ preventScroll: true });
+    };
 
     const render = () => {
+      // Park the same DOM node before replacing calendar rows. Rebuilding or
+      // cloning the form here would discard drafts and pending submissions.
+      if (window.club.booking?.selectedId) {
+        panelHome.append(panel);
+        panel.hidden = true;
+      }
       const visible = items.filter(item => current === 'all' || (current === 'novice' ? item.format === 'NOVICE' : item.format !== 'NOVICE'));
       const groups = new Map();
       visible.forEach(item => {
@@ -50,7 +67,8 @@
         const row = make('article', undefined, 'calendar-day');
         const heading = make('h3', undefined, 'calendar-date');
         heading.append(make('strong', part('day')), make('span', part('month')), make('span', part('weekday')));
-        const slots = make('div', undefined, 'calendar-events');
+        let slots = make('div', undefined, 'calendar-events');
+        let hasPanel = false;
         events.forEach(item => {
           const novice = item.format === 'NOVICE';
           const card = make('div', undefined, 'calendar-event');
@@ -74,22 +92,36 @@
           const link = make('a', full ? 'Уточнить у организатора' : direct ? 'Записаться' : 'Записаться в кабинете', 'calendar-action' + (direct ? ' calendar-action-primary' : ''));
           link.href = full ? contactOrganizer : direct ? '#join' : cabinet;
           link.setAttribute('aria-label', link.textContent + ' · ' + dateText(item.starts_at, true));
-          if (direct) link.addEventListener('click', event => {
-            const radio = Array.from(document.querySelectorAll('input[name="evening"]')).find(input => input.value === item.id);
-            if (!radio) return;
-            event.preventDefault();
-            // Use the form's native control so date, details and POST payload stay in sync.
-            if (!radio.matches(':disabled')) radio.click();
-            const done = document.getElementById('join-result');
-            const target = done && !done.hidden ? done : document.querySelector('.join-form-card');
-            target?.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
-            const focus = done && !done.hidden ? done : document.getElementById('join-form-heading');
-            focus?.focus({ preventScroll: true });
-          });
+          if (direct) {
+            const expanded = opened && window.club.booking?.selectedId === item.id;
+            link.setAttribute('aria-controls', panel.id);
+            link.setAttribute('aria-expanded', String(expanded));
+            if (expanded) {
+              link.textContent = 'К форме записи ↓';
+              link.setAttribute('aria-label', 'К форме записи · ' + dateText(item.starts_at, true));
+              row.classList.add('calendar-day-selected');
+            }
+            link.addEventListener('click', event => {
+              const booking = window.club.booking;
+              if (!booking) return;
+              event.preventDefault();
+              booking.select(item.id);
+              opened = true;
+              render();
+              focusPanel();
+            });
+          }
           card.append(details, link);
           slots.append(card);
+          if (opened && item.id === window.club.booking?.selectedId) {
+            row.append(heading, slots, panel);
+            panel.hidden = false;
+            hasPanel = true;
+            slots = make('div', undefined, 'calendar-events');
+          }
         });
-        row.append(heading, slots);
+        if (!hasPanel) row.append(heading);
+        if (slots.childElementCount) row.append(slots);
         rows.push(row);
       });
       if (rows.length) list.replaceChildren(...rows);
@@ -114,6 +146,28 @@
     agenda.hidden = false;
     agenda.setAttribute('aria-busy', 'false');
     render();
+    document.getElementById('join-change')?.addEventListener('click', () => {
+      const id = window.club.booking.selectedId;
+      opened = false;
+      render();
+      const trigger = Array.from(list.querySelectorAll('.calendar-event')).find(card => card.dataset.eveningId === id)?.querySelector('a');
+      trigger?.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'center' });
+      trigger?.focus({ preventScroll: true });
+    });
+    const openFromLink = (fromQuery = false) => {
+      const booking = window.club.booking;
+      const hasAnchor = ['#join', '#schedule'].includes(location.hash);
+      const hasEvening = fromQuery && knownDates.has(new URLSearchParams(location.search).get('evening'));
+      if (!booking?.selectedId || !(hasAnchor || hasEvening)) return;
+      opened = true;
+      // A direct newcomer link should remain reachable even if a club filter
+      // was selected earlier on this page.
+      current = 'all';
+      render();
+      if (!panel.hidden) focusPanel();
+    };
+    window.addEventListener('hashchange', () => openFromLink());
+    openFromLink(true);
   }).catch(() => {
     const notice = make('p', 'Не удалось загрузить расписание. ', 'booking-status');
     const link = make('a', 'Написать организатору');
