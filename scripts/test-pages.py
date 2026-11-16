@@ -353,9 +353,13 @@ def check_gallery(page, origin):
     first.click()
     dialog = page.get_by_role('dialog')
     expect(dialog).to_be_visible()
-    expect(dialog.locator('figcaption')).to_contain_text('1 из 6')
+    # The gallery grows with new evenings: the caption counts the clicked photo and the next one among all of them.
+    links = page.locator('#place-photos > .photo')
+    total = links.count()
+    position = links.evaluate_all("(items, alt) => items.findIndex(item => item.querySelector('img').alt === alt)", 'Двое игроков общаются жестами') + 1
+    expect(dialog.locator('figcaption')).to_contain_text(f'{position} из {total}')
     page.keyboard.press('ArrowRight')
-    expect(dialog.locator('figcaption')).to_contain_text('2 из 6')
+    expect(dialog.locator('figcaption')).to_contain_text(f'{position % total + 1} из {total}')
     page.keyboard.press('Escape')
     expect(dialog).to_be_hidden()
     expect(first).to_be_focused()
