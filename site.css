@@ -841,7 +841,7 @@ img { display: block; max-width: 100%; }
 .home-story .community-story .story-heading h2 { max-width: 18ch; font-size: clamp(2rem,4vw,3.5rem); }
 .home-story .community-photos { padding-top: 14px; }
 .home-story .community-photos .story-group { position: relative; top: auto; border-radius: 20px; }
-.home-story .story-group img { height: auto; aspect-ratio: 16/10; object-position: center 66%; }
+.home-story .story-group img { height: auto; aspect-ratio: 16/10; object-position: center; }
 .home-story .story-gallery { margin-top: 24px; background: transparent; padding-bottom: 18px; }
 .home-story .story-gallery .gallery-heading { gap: 4px 16px; margin-bottom: 14px; }
 .home-story .story-gallery h3 { margin: 0; font-size: 1.05rem; line-height: 1.3; }
@@ -849,6 +849,7 @@ img { display: block; max-width: 100%; }
 .home-story .editorial-gallery { grid-template-columns: 1fr .9fr 1fr; gap: 12px; }
 .home-story .editorial-gallery .photo-preview { aspect-ratio: 3/4; border-radius: 12px; }
 .home-story .editorial-gallery .photo-preview:nth-child(2) { transform: translateY(14px); }
+.home-story .editorial-gallery .photo-preview:last-child img { object-position: center 28%; }
 
 /* Closing invitation: two clear routes on a single colour field. */
 .home-story .story-chapter > .story-section.story-join { background: radial-gradient(ellipse at 0 0,#58327a,transparent 75%),#241530; padding-top: clamp(48px,6vw,80px); border-radius: 36px 36px 0 0; }
