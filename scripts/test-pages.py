@@ -431,6 +431,7 @@ def check_interior(browser, page, origin):
                       body=json.dumps({} if state['fail'] else {'players': PLAYERS}))
     page.route(endpoint, rating_response)
     try:
+        page.evaluate("localStorage.removeItem('club_public_v1:/rating')")
         page.goto(origin + 'rating/', wait_until='domcontentloaded')
         expect(page.locator('#rating-feedback')).to_contain_text('не загрузилась')
         expect(search).to_be_hidden()
@@ -442,11 +443,13 @@ def check_interior(browser, page, origin):
         page.unroute(endpoint)
     page.route(endpoint, lambda route: route.fulfill(json={'players': []}))
     try:
+        page.evaluate("localStorage.removeItem('club_public_v1:/rating')")
         page.goto(origin + 'rating/', wait_until='domcontentloaded')
         expect(page.locator('#rating-feedback')).to_contain_text('пока нет опубликованных игроков')
         expect(page.locator('#rating-board')).to_be_hidden()
     finally:
         page.unroute(endpoint)
+        page.evaluate("localStorage.removeItem('club_public_v1:/rating')")
 
     page.goto(origin + 'foto/', wait_until='domcontentloaded')
     total = page.locator('#place-photos > .photo').count()
@@ -687,6 +690,7 @@ def check_booking(browser, page, origin):
 
 
 def check_club_preview(page, origin):
+    page.evaluate("Object.keys(localStorage).filter(key => key.startsWith('club_public_v1:')).forEach(key => localStorage.removeItem(key))")
     page.set_viewport_size({'width': 390, 'height': 844})
     page.route('**/api/public/welcome/**', lambda route: route.abort())
     try:

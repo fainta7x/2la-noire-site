@@ -29,6 +29,8 @@ jobs:
           python -m playwright install --with-deps chromium firefox webkit
       - name: Check published HTML in three browsers
         run: python scripts/test-pages.py _site --snapshots _screens
+      - name: Check preloaded results and background refresh
+        run: python scripts/test-public-data.py
       - name: Store viewport screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,7 +56,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python scripts/build-pages.py _site
+      - name: Refresh the public results snapshot
+        run: python scripts/update-public-data.py /tmp/public-results.json
+      - run: python scripts/build-pages.py _site --public-data /tmp/public-results.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

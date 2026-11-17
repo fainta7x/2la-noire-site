@@ -1,0 +1,712 @@
+{
+  "/rating": {
+    "savedAt": 1794911377029,
+    "data": {
+      "players": [
+        {
+          "place": 1,
+          "nickname": "Пристань",
+          "elo": 1780,
+          "games": 61
+        },
+        {
+          "place": 2,
+          "nickname": "Богданчик",
+          "elo": 1721,
+          "games": 65
+        },
+        {
+          "place": 3,
+          "nickname": "Дина",
+          "elo": 1503,
+          "games": 30
+        },
+        {
+          "place": 4,
+          "nickname": "Фандорин",
+          "elo": 1464,
+          "games": 28
+        },
+        {
+          "place": 5,
+          "nickname": "Кавасаки",
+          "elo": 1310,
+          "games": 34
+        },
+        {
+          "place": 6,
+          "nickname": "Матроскина",
+          "elo": 1249,
+          "games": 14
+        },
+        {
+          "place": 7,
+          "nickname": "Серговна",
+          "elo": 1243,
+          "games": 18
+        },
+        {
+          "place": 8,
+          "nickname": "Денди",
+          "elo": 1216,
+          "games": 39
+        },
+        {
+          "place": 9,
+          "nickname": "Гриня",
+          "elo": 1174,
+          "games": 13
+        },
+        {
+          "place": 10,
+          "nickname": "ФМ",
+          "elo": 1171,
+          "games": 21
+        },
+        {
+          "place": 11,
+          "nickname": "Алоэ",
+          "elo": 1164,
+          "games": 28
+        },
+        {
+          "place": 12,
+          "nickname": "Плазип",
+          "elo": 1148,
+          "games": 10
+        },
+        {
+          "place": 13,
+          "nickname": "Атеист с ножом",
+          "elo": 1089,
+          "games": 3
+        },
+        {
+          "place": 14,
+          "nickname": "Насон",
+          "elo": 1082,
+          "games": 33
+        },
+        {
+          "place": 15,
+          "nickname": "Maru",
+          "elo": 1079,
+          "games": 3
+        },
+        {
+          "place": 16,
+          "nickname": "Аннушка",
+          "elo": 1077,
+          "games": 16
+        },
+        {
+          "place": 17,
+          "nickname": "Перец",
+          "elo": 1076,
+          "games": 16
+        },
+        {
+          "place": 18,
+          "nickname": "Чагин",
+          "elo": 1056,
+          "games": 9
+        },
+        {
+          "place": 19,
+          "nickname": "Millourt",
+          "elo": 1053,
+          "games": 9
+        },
+        {
+          "place": 20,
+          "nickname": "Джава",
+          "elo": 1044,
+          "games": 13
+        },
+        {
+          "place": 21,
+          "nickname": "Знак",
+          "elo": 1036,
+          "games": 24
+        },
+        {
+          "place": 22,
+          "nickname": "Мона Дарья",
+          "elo": 1031,
+          "games": 3
+        },
+        {
+          "place": 23,
+          "nickname": "Диссонанс",
+          "elo": 1019,
+          "games": 23
+        },
+        {
+          "place": 24,
+          "nickname": "Добряк",
+          "elo": 1014,
+          "games": 5
+        },
+        {
+          "place": 25,
+          "nickname": "Спящий",
+          "elo": 1009,
+          "games": 11
+        },
+        {
+          "place": 26,
+          "nickname": "Серый",
+          "elo": 968,
+          "games": 35
+        },
+        {
+          "place": 27,
+          "nickname": "Jin",
+          "elo": 931,
+          "games": 32
+        },
+        {
+          "place": 28,
+          "nickname": "Точка",
+          "elo": 915,
+          "games": 3
+        },
+        {
+          "place": 29,
+          "nickname": "Васса",
+          "elo": 869,
+          "games": 18
+        },
+        {
+          "place": 30,
+          "nickname": "Вид",
+          "elo": 789,
+          "games": 28
+        }
+      ]
+    }
+  },
+  "/history": {
+    "savedAt": 1794911415295,
+    "data": {
+      "evenings": [
+        {
+          "id": "3ce7717d-8607-48aa-8dda-13f9d96ffeb4",
+          "title": "Игровой вечер — 13 ноября",
+          "starts_at": "2026-11-13T20:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/3ce7717d-8607-48aa-8dda-13f9d96ffeb4/image.png",
+          "games": 5,
+          "players": 11,
+          "red_wins": 3,
+          "black_wins": 2,
+          "most_wins": [
+            {
+              "nickname": "Дина",
+              "value": "5 побед"
+            },
+            {
+              "nickname": "Кавасаки",
+              "value": "4 победы"
+            },
+            {
+              "nickname": "Гриня",
+              "value": "3 победы"
+            }
+          ]
+        },
+        {
+          "id": "cbcb7301-8580-423a-bb5a-3d1733d7fbea",
+          "title": "Вечер во вторник 3.11",
+          "starts_at": "2026-11-03T19:30:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/cbcb7301-8580-423a-bb5a-3d1733d7fbea/image.png",
+          "games": 6,
+          "players": 12,
+          "red_wins": 3,
+          "black_wins": 3,
+          "most_wins": [
+            {
+              "nickname": "Пристань",
+              "value": "4 победы"
+            },
+            {
+              "nickname": "Аннушка",
+              "value": "4 победы"
+            },
+            {
+              "nickname": "Алоэ",
+              "value": "4 победы"
+            }
+          ]
+        },
+        {
+          "id": "43388507-f409-4611-8b54-004374ade7c1",
+          "title": "Игровой вечер — 30 октября",
+          "starts_at": "2026-10-30T20:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/43388507-f409-4611-8b54-004374ade7c1/image.png",
+          "games": 7,
+          "players": 16,
+          "red_wins": 1,
+          "black_wins": 6,
+          "most_wins": [
+            {
+              "nickname": "Дина",
+              "value": "4 победы"
+            },
+            {
+              "nickname": "Алоэ",
+              "value": "3 победы"
+            },
+            {
+              "nickname": "Millourt",
+              "value": "2 победы"
+            }
+          ]
+        },
+        {
+          "id": "4c5c8366-5e9b-4449-8f2b-8c0ceef02e64",
+          "title": "Игровой вечер — 23 октября",
+          "starts_at": "2026-10-23T20:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/4c5c8366-5e9b-4449-8f2b-8c0ceef02e64/image.png",
+          "games": 5,
+          "players": 11,
+          "red_wins": 2,
+          "black_wins": 3,
+          "most_wins": [
+            {
+              "nickname": "Дина",
+              "value": "3 победы"
+            },
+            {
+              "nickname": "Перец",
+              "value": "3 победы"
+            },
+            {
+              "nickname": "Jin",
+              "value": "3 победы"
+            }
+          ]
+        },
+        {
+          "id": "307d5dfc-d9ae-4663-b170-652daa321850",
+          "title": "Игровой вечер — 16 октября",
+          "starts_at": "2026-10-16T21:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/307d5dfc-d9ae-4663-b170-652daa321850/image.png",
+          "games": 5,
+          "players": 14,
+          "red_wins": 0,
+          "black_wins": 5,
+          "most_wins": [
+            {
+              "nickname": "Дина",
+              "value": "4 победы"
+            },
+            {
+              "nickname": "Мона Дарья",
+              "value": "2 победы"
+            }
+          ]
+        },
+        {
+          "id": "cec54230-7028-4826-b37d-8009aa8f0223",
+          "title": "Игровой вечер — 9 октября",
+          "starts_at": "2026-10-09T20:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/cec54230-7028-4826-b37d-8009aa8f0223/image.png",
+          "games": 6,
+          "players": 14,
+          "red_wins": 5,
+          "black_wins": 1,
+          "most_wins": [
+            {
+              "nickname": "Пристань",
+              "value": "5 побед"
+            },
+            {
+              "nickname": "Богданчик",
+              "value": "5 побед"
+            },
+            {
+              "nickname": "Чагин",
+              "value": "4 победы"
+            }
+          ]
+        },
+        {
+          "id": "3a67e733-c43f-4aed-a511-9259f01cc43e",
+          "title": "Игровой вечер — 2 октября",
+          "starts_at": "2026-10-02T21:00:00+03:00",
+          "format": "CASUAL",
+          "format_label": "Клубный",
+          "image": "/api/public/welcome/history/3a67e733-c43f-4aed-a511-9259f01cc43e/image.png",
+          "games": 3,
+          "players": 12,
+          "red_wins": 2,
+          "black_wins": 1,
+          "most_wins": [
+            {
+              "nickname": "Jin",
+              "value": "3 победы"
+            },
+            {
+              "nickname": "Насон",
+              "value": "2 победы"
+            },
+            {
+              "nickname": "Диссонанс",
+              "value": "2 победы"
+            }
+          ]
+        }
+      ],
+      "app_url": "https://app.2lamafia.ru"
+    }
+  },
+  "/seasons": {
+    "savedAt": 1794911412474,
+    "data": {
+      "seasons": [
+        {
+          "id": "autumn-2026",
+          "title": "Осень 2026",
+          "date_label": "1 сентября — 30 ноября",
+          "current": true,
+          "games": 55,
+          "evenings": 9,
+          "players": 30,
+          "image": "/api/public/welcome/seasons/autumn-2026/image.png",
+          "nominations_image": "/api/public/welcome/seasons/autumn-2026/nominations.png",
+          "leader": {
+            "nickname": "Пристань",
+            "value": "+724"
+          },
+          "mvp": {
+            "nickname": "Пристань",
+            "value": "2 вечера"
+          },
+          "rows": [
+            {
+              "place": 1,
+              "nickname": "Пристань",
+              "value": "+724",
+              "detail": "игр 51 · 23 победы"
+            },
+            {
+              "place": 2,
+              "nickname": "Богданчик",
+              "value": "+641",
+              "detail": "игр 55 · 24 победы"
+            },
+            {
+              "place": 3,
+              "nickname": "Дина",
+              "value": "+503",
+              "detail": "игр 30 · 21 победа"
+            },
+            {
+              "place": 4,
+              "nickname": "Фандорин",
+              "value": "+391",
+              "detail": "игр 18 · 12 побед"
+            },
+            {
+              "place": 5,
+              "nickname": "Кавасаки",
+              "value": "+310",
+              "detail": "игр 34 · 16 побед"
+            },
+            {
+              "place": 6,
+              "nickname": "Серговна",
+              "value": "+243",
+              "detail": "игр 18 · 8 побед"
+            },
+            {
+              "place": 7,
+              "nickname": "Гриня",
+              "value": "+174",
+              "detail": "игр 13 · 8 побед"
+            },
+            {
+              "place": 8,
+              "nickname": "ФМ",
+              "value": "+171",
+              "detail": "игр 21 · 11 побед"
+            },
+            {
+              "place": 9,
+              "nickname": "Алоэ",
+              "value": "+164",
+              "detail": "игр 28 · 14 побед"
+            },
+            {
+              "place": 10,
+              "nickname": "Плазип",
+              "value": "+148",
+              "detail": "игр 10 · 5 побед"
+            }
+          ]
+        }
+      ],
+      "app_url": "https://app.2lamafia.ru"
+    }
+  },
+  "/tournaments": {
+    "savedAt": 1794911418984,
+    "data": {
+      "tournaments": [
+        {
+          "id": "d7fb7ae8-7812-44a8-a1a5-3057f6aafb20",
+          "title": "Gun Town Cup 4",
+          "date": "2026-11-07T08:00:00.000Z",
+          "venue": "Суп с Котом",
+          "image": "/api/public/welcome/tournaments/d7fb7ae8-7812-44a8-a1a5-3057f6aafb20/image.png",
+          "nominations_image": "/api/public/welcome/tournaments/d7fb7ae8-7812-44a8-a1a5-3057f6aafb20/nominations.png",
+          "standings": [
+            {
+              "place": 1,
+              "name": "Плазип",
+              "points": 7.7,
+              "wins": 5,
+              "games": 10
+            },
+            {
+              "place": 2,
+              "name": "Серговна",
+              "points": 6.5,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 3,
+              "name": "Богданчик",
+              "points": 6.4,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 4,
+              "name": "Фандорин",
+              "points": 6.35,
+              "wins": 5,
+              "games": 10
+            },
+            {
+              "place": 5,
+              "name": "Кавасаки",
+              "points": 6.3,
+              "wins": 5,
+              "games": 10
+            },
+            {
+              "place": 6,
+              "name": "Денди",
+              "points": 5.7,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 7,
+              "name": "Пристань",
+              "points": 4.9,
+              "wins": 2,
+              "games": 10
+            },
+            {
+              "place": 8,
+              "name": "Васса",
+              "points": 2.6,
+              "wins": 2,
+              "games": 10
+            },
+            {
+              "place": 9,
+              "name": "Аннушка",
+              "points": 2.5,
+              "wins": 2,
+              "games": 10
+            },
+            {
+              "place": 10,
+              "name": "Вид",
+              "points": 1,
+              "wins": 1,
+              "games": 10
+            }
+          ]
+        },
+        {
+          "id": "bde2c16b-0f94-4083-ae80-e453698760f1",
+          "title": "Gun Town Cup 3",
+          "date": "2026-10-03T08:00:00.000Z",
+          "venue": "Суп с Котом",
+          "image": "/api/public/welcome/tournaments/bde2c16b-0f94-4083-ae80-e453698760f1/image.png",
+          "nominations_image": "/api/public/welcome/tournaments/bde2c16b-0f94-4083-ae80-e453698760f1/nominations.png",
+          "standings": [
+            {
+              "place": 1,
+              "name": "Фандорин",
+              "points": 10.3,
+              "wins": 7,
+              "games": 8
+            },
+            {
+              "place": 2,
+              "name": "Гриня",
+              "points": 7.7,
+              "wins": 5,
+              "games": 8
+            },
+            {
+              "place": 3,
+              "name": "Серый",
+              "points": 6.1,
+              "wins": 5,
+              "games": 8
+            },
+            {
+              "place": 4,
+              "name": "Кавасаки",
+              "points": 5.4,
+              "wins": 4,
+              "games": 8
+            },
+            {
+              "place": 5,
+              "name": "Пристань",
+              "points": 4.9,
+              "wins": 4,
+              "games": 8
+            },
+            {
+              "place": 6,
+              "name": "Серговна",
+              "points": 4.6,
+              "wins": 4,
+              "games": 8
+            },
+            {
+              "place": 7,
+              "name": "Jin",
+              "points": 4.07,
+              "wins": 3,
+              "games": 8
+            },
+            {
+              "place": 8,
+              "name": "Богданчик",
+              "points": 3.8,
+              "wins": 3,
+              "games": 8
+            },
+            {
+              "place": 9,
+              "name": "Вид",
+              "points": 3.5,
+              "wins": 3,
+              "games": 8
+            },
+            {
+              "place": 10,
+              "name": "Васса",
+              "points": 3.3,
+              "wins": 2,
+              "games": 8
+            }
+          ]
+        },
+        {
+          "id": "987670b4-afd7-48d1-92ce-3d4d4cbed8d6",
+          "title": "Gun Town Cup 2",
+          "date": "2026-08-01T09:00:00.000Z",
+          "venue": "Зал #1 (Главный)",
+          "image": "/api/public/welcome/tournaments/987670b4-afd7-48d1-92ce-3d4d4cbed8d6/image.png",
+          "nominations_image": "/api/public/welcome/tournaments/987670b4-afd7-48d1-92ce-3d4d4cbed8d6/nominations.png",
+          "standings": [
+            {
+              "place": 1,
+              "name": "Матроскина",
+              "points": 11.2,
+              "wins": 8,
+              "games": 10
+            },
+            {
+              "place": 2,
+              "name": "Денди",
+              "points": 7,
+              "wins": 2,
+              "games": 10
+            },
+            {
+              "place": 3,
+              "name": "Богданчик",
+              "points": 6,
+              "wins": 5,
+              "games": 10
+            },
+            {
+              "place": 4,
+              "name": "Фандорин",
+              "points": 5.6,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 5,
+              "name": "Пристань",
+              "points": 5.35,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 6,
+              "name": "Знак",
+              "points": 5.3,
+              "wins": 4,
+              "games": 10
+            },
+            {
+              "place": 7,
+              "name": "Джава",
+              "points": 5,
+              "wins": 2,
+              "games": 10
+            },
+            {
+              "place": 8,
+              "name": "Насон",
+              "points": 4.1,
+              "wins": 3,
+              "games": 10
+            },
+            {
+              "place": 9,
+              "name": "Вид",
+              "points": 4,
+              "wins": 3,
+              "games": 10
+            },
+            {
+              "place": 10,
+              "name": "Спящий",
+              "points": 3.8,
+              "wins": 3,
+              "games": 10
+            }
+          ]
+        }
+      ],
+      "app_url": "https://app.2lamafia.ru"
+    }
+  }
+}
