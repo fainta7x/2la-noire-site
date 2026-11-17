@@ -287,11 +287,19 @@ def check_home_story(browser, page, origin):
             expect(image).to_have_js_property('complete', True)
             assert image.evaluate('(img) => img.decode().then(() => img.naturalWidth > 0)')
         assert page.locator('#intro').bounding_box()['y'] < page.locator('.chapter-nav').bounding_box()['y']
-        for link in page.locator('.chapter-nav a').all():
-            link.click()
-            heading = page.locator(link.get_attribute('href')).get_by_role('heading').first
-            expect(heading).to_be_in_viewport()
-            assert heading.bounding_box()['y'] >= page.locator('.chapter-nav').bounding_box()['y'] + page.locator('.chapter-nav').bounding_box()['height'] - 2
+        for width in (390, 1440):
+            page.set_viewport_size({'width': width, 'height': 900})
+            chapter_nav = page.locator('.chapter-nav')
+            assert chapter_nav.evaluate('(el) => getComputedStyle(el).position') == 'static'
+            document_y = chapter_nav.evaluate('(el) => el.getBoundingClientRect().top + scrollY')
+            for link in chapter_nav.locator('a').all():
+                link.click()
+                heading = page.locator(link.get_attribute('href')).get_by_role('heading').first
+                expect(heading).to_be_in_viewport()
+                assert abs(chapter_nav.evaluate('(el) => el.getBoundingClientRect().top + scrollY') - document_y) < 2
+                header_bottom = page.locator('.site-header').evaluate('(el) => Math.max(0, el.getBoundingClientRect().bottom)')
+                assert heading.bounding_box()['y'] >= header_bottom - 2
+            assert chapter_nav.bounding_box()['y'] + chapter_nav.bounding_box()['height'] < 0
     finally:
         page.unroute(endpoint)
     # The complete story and both ways to join are available without JavaScript.
@@ -305,6 +313,39 @@ def check_home_story(browser, page, origin):
         expect(fallback.locator('.story-join').get_by_role('link', name='Ближайшие турниры', exact=True)).to_have_attribute('href', '/turniry/')
     finally:
         context.close()
+
+
+def check_account_navigation(browser, origin):
+    # Both authenticated states must fit beside the original logo, including at 320px.
+    for organizer in (False, True):
+        context = browser.new_context(reduced_motion='reduce')
+        context.add_init_script(INIT)
+        context.route('**/mc.yandex.ru/**', lambda route: route.abort())
+        session = {'signed_in': True, 'cabinet_url': 'https://app.2lamafia.ru/player',
+                   'organizer': organizer, 'crm_url': 'https://app.2lamafia.ru/admin' if organizer else None}
+        context.route('**/api/public/welcome/session', lambda route: route.fulfill(
+            status=200, content_type='application/json', body=json.dumps(session)))
+        try:
+            page = context.new_page()
+            for width in (320, 390, 760, 1024, 1241, 1440):
+                page.set_viewport_size({'width': width, 'height': 900})
+                page.goto(origin + 'igry/', wait_until='domcontentloaded')
+                cabinet = page.get_by_role('link', name='Мой кабинет', exact=True)
+                expect(cabinet).to_have_attribute('href', session['cabinet_url'])
+                page.evaluate('document.fonts.ready')
+                expect(page.get_by_role('link', name='CRM', exact=True)).to_have_count(int(organizer))
+                assert page.evaluate('document.documentElement.scrollWidth') <= width + 1
+                brand = page.locator('.site-header .brand').bounding_box()
+                actions = page.locator('.header-actions').bounding_box()
+                assert abs(brand['y'] + brand['height'] / 2 - actions['y'] - actions['height'] / 2) < 1
+                assert brand['x'] + brand['width'] + 8 <= actions['x']
+                assert actions['x'] + actions['width'] <= width
+                assert cabinet.bounding_box()['height'] >= 44
+            page.evaluate('document.documentElement.style.scrollBehavior = "auto"')
+            page.locator('.footer-bottom a').click()
+            assert page.evaluate('scrollY') == 0
+        finally:
+            context.close()
 
 
 def check_cover_photos(page, origin):
@@ -696,6 +737,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         for width, height in VIEWPORTS:
             check_layout(page, origin, width, height, snapshots)
         check_home_story(browser, page, origin)
+        check_account_navigation(browser, origin)
         check_cover_photos(page, origin)
         check_auto_photos(browser, origin)
         check_club_preview(page, origin)
