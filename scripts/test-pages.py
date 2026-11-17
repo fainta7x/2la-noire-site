@@ -359,11 +359,11 @@ def check_cover_photos(page, origin):
     second.focus()
     page.keyboard.press('Enter')
     expect(second).to_have_attribute('aria-current', 'true')
-    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Двое игроков внимательно слушают речь за столом')
     expect(second).to_be_focused()
     # This browser asks for reduced motion: the photos must stay where the visitor left them.
     page.wait_for_timeout(7000)
-    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Игроки слушают речь за столом')
+    expect(photos.locator('.hero-slide.is-active img')).to_have_attribute('alt', 'Двое игроков внимательно слушают речь за столом')
 
 
 def check_auto_photos(browser, origin):

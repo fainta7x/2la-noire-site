@@ -11,7 +11,7 @@ html.js .js-status { display: block; }
 .booking-lead { max-width: 42ch; margin: 24px 0 0; color: var(--muted); font-size: clamp(1rem,1.4vw,1.2rem); line-height: 1.7; }
 .booking-opening-links { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; margin-top: 26px; }
 .booking-opening-photo { margin: 0; overflow: hidden; border-radius: 18px 64px 18px 18px; background: var(--surface); }
-.booking-opening-photo img { width: 100%; height: clamp(290px,31vw,410px); object-fit: cover; object-position: center 60%; }
+.booking-opening-photo img { width: 100%; height: clamp(290px,31vw,410px); object-fit: cover; object-position: center 32%; }
 .booking-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px 48px; margin-bottom: 30px; }
 .booking-section-heading h2 { margin: 0; }
 .booking-section-heading > p { max-width: 38ch; margin: 0; color: var(--muted); line-height: 1.7; }
@@ -140,7 +140,7 @@ html.js .js-status { display: block; }
 .booking-club-visual { grid-area:visual; position:relative; min-width:0; margin:28px 12px 48px 0; isolation:isolate; }
 .booking-club-monogram { position:absolute; top:-69px; right:24px; z-index:-1; color:transparent; -webkit-text-stroke:1px #d9b7ff40; font-size:clamp(7rem,12vw,11rem); font-weight:850; letter-spacing:-.06em; line-height:1; pointer-events:none; }
 .booking-club-photo { margin:0; overflow:hidden; border-radius:18px 76px 18px 18px; background:var(--surface); }
-.booking-club-photo img { width:100%; height:clamp(350px,33vw,460px); object-fit:cover; object-position:center 40%; }
+.booking-club-photo img { width:100%; height:clamp(350px,33vw,460px); object-fit:cover; object-position:center 52%; }
 .booking-rules { position:absolute; right:-10px; bottom:-45px; display:grid; grid-template-columns:1fr auto; width:250px; padding:20px 24px; border:1px solid #fff6; border-radius:16px; color:#2c1938; background:#f2eae1; box-shadow:0 18px 44px #0004; transform:rotate(4deg); transition:transform .2s,background-color .2s; }
 .booking-rules-art { grid-column:1 / -1; width:90px; margin:0 0 10px -5px; }
 .booking-rules-art svg { display:block; width:100%; height:auto; }
@@ -212,7 +212,7 @@ html.js .js-status { display: block; }
  .booking-club-visual { grid-area:auto; order:1; width:100%; max-width:560px; justify-self:center; margin:30px 0 0; padding-bottom:0; }
  .booking-club-monogram { display:none; }
  .booking-club-photo { border-radius:14px 54px 14px 14px; }
- .booking-club-photo img { height:clamp(240px,62vw,350px); object-position:center; }
+ .booking-club-photo img { height:clamp(240px,62vw,350px); }
  .booking-rules { position:relative; right:auto; bottom:auto; grid-template-columns:68px minmax(0,1fr); gap:0 14px; width:calc(100% - 24px); margin:-26px 12px 0; padding:18px 20px; transform:none; }
  .booking-rules-art { grid-column:1; grid-row:1 / 3; width:68px; align-self:center; margin:0; }
  .booking-rules-copy { grid-column:2; }
