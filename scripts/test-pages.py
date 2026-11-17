@@ -385,10 +385,10 @@ def check_gallery(page, origin):
     for width in (390, 1440):
         page.set_viewport_size({'width': width, 'height': 900})
         sizes = page.locator('#place-photos > .photo').evaluate_all("""photos => photos.map(photo => {
-          const {width, height} = photo.getBoundingClientRect();
-          return [width, height];
+          const {width, height, left, right} = photo.getBoundingClientRect();
+          return {width, height, left, right};
         })""")
-        assert len(sizes) >= 6 and all(abs(w - sizes[0][0]) < 1 and abs(h - sizes[0][1]) < 1 for w, h in sizes), (width, sizes)
+        assert len(sizes) >= 6 and all(s['width'] >= 120 and s['height'] >= 120 and s['left'] >= 0 and s['right'] <= width for s in sizes), (width, sizes)
     page.set_viewport_size({'width': 390, 'height': 844})
     first = page.get_by_role('link', name='Двое игроков общаются жестами')
     first.click()
@@ -404,6 +404,81 @@ def check_gallery(page, origin):
     page.keyboard.press('Escape')
     expect(dialog).to_be_hidden()
     expect(first).to_be_focused()
+
+
+def check_interior(browser, page, origin):
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(origin + 'rating/', wait_until='domcontentloaded')
+    search = page.get_by_role('searchbox', name='Найти игрока')
+    search.fill('иГрОк 7')
+    expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
+    expect(page.locator('#rating-count')).to_have_text('Найдено: 1 из 7')
+    search.fill('Такого ника нет')
+    expect(page.locator('#rating-empty')).to_be_visible()
+    expect(page.locator('#rating-board')).to_be_hidden()
+    search.fill('')
+    expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_hidden()
+    page.get_by_role('button', name='Показать всех игроков (7)').click()
+    expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
+    search.fill('Игрок 1')
+    search.fill('')
+    expect(page.get_by_role('row', name='7 Игрок 7 1593 7')).to_be_visible()
+
+    endpoint = '**/api/public/welcome/rating'
+    state = {'fail': True}
+    def rating_response(route):
+        route.fulfill(status=503 if state['fail'] else 200, content_type='application/json',
+                      body=json.dumps({} if state['fail'] else {'players': PLAYERS}))
+    page.route(endpoint, rating_response)
+    try:
+        page.goto(origin + 'rating/', wait_until='domcontentloaded')
+        expect(page.locator('#rating-feedback')).to_contain_text('не загрузилась')
+        expect(search).to_be_hidden()
+        state['fail'] = False
+        page.get_by_role('button', name='Попробовать ещё раз').click()
+        expect(page.get_by_role('table', name='Таблица игроков')).to_be_visible()
+        expect(search).to_be_visible()
+    finally:
+        page.unroute(endpoint)
+    page.route(endpoint, lambda route: route.fulfill(json={'players': []}))
+    try:
+        page.goto(origin + 'rating/', wait_until='domcontentloaded')
+        expect(page.locator('#rating-feedback')).to_contain_text('пока нет опубликованных игроков')
+        expect(page.locator('#rating-board')).to_be_hidden()
+    finally:
+        page.unroute(endpoint)
+
+    page.goto(origin + 'foto/', wait_until='domcontentloaded')
+    total = page.locator('#place-photos > .photo').count()
+    page.get_by_role('button', name='Турниры', exact=True).click()
+    photos = page.locator('#place-photos > .photo:visible')
+    tournament_count = photos.count()
+    assert 1 < tournament_count < total
+    assert photos.evaluate_all('(links) => links.every(link => link.dataset.photoKind === "tournament")')
+    second_alt = photos.nth(1).locator('img').get_attribute('alt')
+    photos.first.click()
+    expect(page.locator('#photo-description')).to_contain_text(f'1 из {tournament_count}')
+    page.keyboard.press('ArrowRight')
+    expect(page.locator('#photo-dialog img')).to_have_attribute('alt', second_alt)
+    page.keyboard.press('Escape')
+    expect(photos.first).to_be_focused()
+    page.get_by_role('button', name='Все фотографии', exact=True).click()
+    expect(photos).to_have_count(total)
+
+    context = browser.new_context(java_script_enabled=False, viewport={'width': 390, 'height': 844})
+    try:
+        fallback = context.new_page()
+        fallback.goto(origin + 'blog/')
+        fallback.locator('.journal-entry').first.locator('summary').click()
+        expect(fallback.locator('.journal-body').first).to_be_visible()
+        fallback.goto(origin + 'pravila/')
+        fallback.locator('.inner-index a[href="#rules-roles"]').click()
+        expect(fallback.locator('#rules-roles-title')).to_be_in_viewport()
+        fallback.goto(origin + 'foto/')
+        expect(fallback.locator('#photo-filters')).to_be_hidden()
+        expect(fallback.locator('#place-photos .photo').first).to_have_attribute('href', re.compile(r'^/img/'))
+    finally:
+        context.close()
 
 
 def check_form(page, origin, server):
@@ -742,6 +817,7 @@ def check_browser(browser_type, origin, server, snapshots=None):
         check_auto_photos(browser, origin)
         check_club_preview(page, origin)
         check_gallery(page, origin)
+        check_interior(browser, page, origin)
         check_form(page, origin, server)
         check_booking(browser, page, origin)
         check_guest_booking(browser, origin)

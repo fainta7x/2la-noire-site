@@ -3,37 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Клубный рейтинг игроков — 2LA noire</title>
-  <meta name="description" content="Рейтинг 2LA noire, число сыгранных игр и вход в личный кабинет.">
+  <title>Клубный рейтинг — 2LA noire</title>
+  <meta name="description" content="Клубный рейтинг 2LA noire: поиск по нику, текущее Эло и число учтённых игр.">
   <link rel="canonical" href="https://2lamafia.ru/rating/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:site_name" content="2LA noire">
-  <meta property="og:title" content="Клубный рейтинг игроков — 2LA noire">
-  <meta property="og:description" content="Рейтинг 2LA noire, число сыгранных игр и вход в личный кабинет.">
+  <meta property="og:title" content="Клубный рейтинг — 2LA noire">
+  <meta property="og:description" content="Клубный рейтинг 2LA noire: поиск по нику, текущее Эло и число учтённых игр.">
   <meta property="og:url" content="https://2lamafia.ru/rating/">
   <meta property="og:image" content="https://2lamafia.ru/img/evenings/share.jpg">
   <link rel="icon" href="/img/favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
   <link rel="stylesheet" href="/site.css">
+  <link rel="stylesheet" href="/interior.css">
   <script src="/welcome.js" defer></script>
   <script src="/cms.js" defer></script>
   <script src="/account.js" defer></script>
 </head>
-<body>
+<body class="interior interior-rating">
   <!-- include: header -->
-  <main id="content">
-<section class="section page-opening" id="rating">
-      <div class="section-inner rating-layout">
-        <div class="rating-copy">
-          
-          <h1>Клубный рейтинг</h1>
-          <p class="section-copy" id="rating-copy">Свои игры и статистику можно посмотреть в личном кабинете.</p>
-          <a class="text-link account-login" href="https://app.2lamafia.ru/player?return=https%3A%2F%2F2lamafia.ru%2F">Открыть личный кабинет <span aria-hidden="true">→</span></a>
-        </div>
-        <div class="rating-board" id="rating-board" hidden></div>
-      </div>
-    </section>
+  <main id="content" data-editorial>
+<section class="inner-hero page-opening"><div class="inner-shell rating-opening"><div><p class="inner-kicker"><a href="/club/">Клуб</a> / Результаты игроков</p><h1>Клубный рейтинг</h1><p class="inner-lead">Текущее Эло и число сыгранных игр. Найди свой ник или посмотри, как располагаются игроки в общей таблице клуба.</p></div><div class="rating-note"><strong>Эло</strong><p>Текущий рейтинг игрока. Меняется по результатам учтённых игр.</p></div></div></section>
+<section class="inner-section"><div class="inner-shell">
+<div id="rating-controls" class="ranking-toolbar" hidden><label class="ranking-search" for="rating-search">Найти игрока<input id="rating-search" type="search" placeholder="Ник игрока" autocomplete="off" aria-controls="rating-board"></label><p id="rating-count" class="ranking-count" aria-live="polite"></p></div>
+<p id="rating-feedback" class="ranking-status" role="status">Таблица загружается…</p><div class="rating-board" id="rating-board" hidden></div>
+<p id="rating-empty" class="ranking-empty" hidden>Такого ника в таблице нет. Попробуй изменить запрос.</p>
+<button id="rating-retry" class="secondary-button" type="button" hidden>Попробовать ещё раз</button>
+<noscript><p class="ranking-status">Для загрузки таблицы нужен JavaScript. Свои результаты можно посмотреть в <a class="text-link" href="https://app.2lamafia.ru/player">личном кабинете →</a>.</p></noscript>
+</div></section><section class="inner-section inner-paper"><div class="inner-shell"><div class="inner-heading"><div><p class="inner-kicker">Как читать таблицу</p><h2>Рейтинг, опыт и результаты за сезон</h2></div></div><div class="ranking-explanation"><div><h3>Место и Эло</h3><p>В таблице — текущее положение игроков в клубе. Изменения рейтинга связаны с результатами учтённых игр, а не только с числом посещённых вечеров.</p></div><div><h3>Число игр</h3><p>Показывает, на каком количестве игр сложился результат. Учитывай это, когда сравниваешь игроков, которые играют в клубе разное время.</p></div><div><h3>Сезонная таблица</h3><p>Чтобы посмотреть изменение рейтинга за определённый период и номинации, открой <a class="text-link" href="/sezony/">рейтинговые сезоны →</a>.</p></div></div></div></section><section class="inner-route"><div class="inner-shell inner-route-grid"><div><h2>Свои игры и статистика</h2><p>В личном кабинете — твои результаты и запись на следующие игры.</p></div><div class="inner-actions"><a class="primary-button" href="https://app.2lamafia.ru/player">Открыть личный кабинет <span aria-hidden="true">→</span></a></div></div></section>
   </main>
   <!-- include: footer -->
 </body>
