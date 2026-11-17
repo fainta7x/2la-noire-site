@@ -232,6 +232,10 @@
     if (!node) return;
     read(endpoint).then((data) => render(node, data)).catch(() => onError?.(node)).catch(() => {});
   };
+  const showResults = node => {
+    node.hidden = false;
+    document.querySelector('[data-results-for="' + node.id + '"]')?.setAttribute('hidden', '');
+  };
 
   const showResult = (node, item, title, description, fallback) => {
     const cached = node.querySelector('.result-picture');
@@ -316,15 +320,16 @@
   if (tournaments) read('/tournaments').then((data) => {
     const items = Array.isArray(data.tournaments) ? data.tournaments : [];
     if (!items.length) return;
-    tournaments.replaceChildren(make('h2', 'Итоги прошедших турниров'), ...items.map((item) => {
+    tournaments.replaceChildren(make('h2', 'Опубликованные таблицы'), ...items.map((item, index) => {
       const block = make('details', undefined, 'result-block');
+      if (index === 0) block.open = true;
       block.append(make('summary', item.title + (item.date ? ' · ' + dateText(item.date, false, true) : '')),
         picture(item.image, 'Итоговая таблица турнира ' + item.title, () => table('Таблица турнира', ['Место', 'Игрок', 'Очки', 'Победы', 'Игры'], (item.standings || []).map((row) => [row.place, row.name, row.points, row.wins, row.games]))));
       // Nominations: who won what. If the card cannot be drawn (no nominations), it simply disappears.
       if (item.nominations_image) block.append(picture(item.nominations_image, 'Номинации турнира ' + item.title, () => document.createComment('')));
       return block;
     }));
-    tournaments.hidden = false;
+    showResults(tournaments);
   }).catch(() => {});
 
   const seasons = document.getElementById('season-results');
@@ -343,22 +348,27 @@
       if (item.nominations_image) block.append(make('h3', 'Номинации сезона'), picture(item.nominations_image, 'Номинации сезона ' + item.title, () => document.createComment('')));
       return block;
     }));
-    seasons.hidden = false;
+    showResults(seasons);
   }).catch(() => {});
 
   const history = document.getElementById('evening-history');
   if (history) read('/history').then((data) => {
-    const items = Array.isArray(data.evenings) ? data.evenings : [];
+    const items = Array.isArray(data.evenings) ? data.evenings.filter(item => item.format !== 'NOVICE') : [];
     if (!items.length) return;
-    history.replaceChildren(make('h2', 'Как прошли последние вечера'), ...items.map((item) => {
-      const block = make('article', undefined, 'result-block');
-      block.append(make('h3', dateText(item.starts_at, false, true)), make('p', item.format_label + ' · игр: ' + item.games + ' · игроков: ' + item.players + ' · победы красных: ' + item.red_wins + ', чёрных: ' + item.black_wins, 'agenda-meta'));
+    history.replaceChildren(make('h2', 'Опубликованные итоги'), ...items.map((item, index) => {
+      const block = make('details', undefined, 'result-block');
+      if (index === 0) block.open = true;
+      const stats = [item.format_label];
+      if (Number.isFinite(item.games)) stats.push('Игр: ' + item.games);
+      if (Number.isFinite(item.players)) stats.push('Игроков: ' + item.players);
+      if (Number.isFinite(item.red_wins) && Number.isFinite(item.black_wins)) stats.push('Победы: красные ' + item.red_wins + ', чёрные ' + item.black_wins);
+      block.append(make('summary', dateText(item.starts_at, false, true)), make('p', stats.filter(Boolean).join(' · '), 'agenda-meta'));
       block.append(picture(item.image, 'Итоги вечера ' + dateText(item.starts_at), () => {
         const text = make('p', (item.most_wins || []).length ? 'Больше всех побед: ' + item.most_wins.map((entry) => entry.nickname + ' (' + entry.value + ')').join(', ') : '');
         return text;
       }));
       return block;
     }));
-    history.hidden = false;
+    showResults(history);
   }).catch(() => {});
 })();

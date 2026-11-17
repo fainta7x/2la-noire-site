@@ -51,6 +51,15 @@
     updateLink('#hub-tg', site.telegram_url);
     updateLink('#hub-vk', site.vk_url);
     updateLink('#hub-write', data.contacts?.find((entry) => entry.label === 'Telegram')?.url);
+    const contact = safeLink(data.contacts?.find(entry => entry.label === 'Telegram')?.url);
+    if (contact) document.querySelectorAll('[data-organizer]').forEach(link => { link.href = contact; });
+    const telegram = safeLink(site.telegram_url) || window.club.telegram;
+    document.querySelectorAll('[data-club-telegram]').forEach(link => { link.href = telegram; });
+    const venue = data.evening?.venue;
+    if (venue?.name) document.querySelectorAll('[data-club-venue-name]').forEach(node => { node.textContent = 'Кафе «' + venue.name + '»'; });
+    if (venue?.address) document.querySelectorAll('[data-club-venue-address]').forEach(node => { node.textContent = 'Тула, ' + venue.address + '.'; });
+    const map = safeLink(venue?.mapUrl);
+    if (map) document.querySelectorAll('[data-club-venue-map]').forEach(link => { link.href = map; });
 
     const benefits = blocks(customized(site, 'benefits'));
     const grid = document.getElementById('benefit-grid');
@@ -109,40 +118,80 @@
 
   const board = document.getElementById('rating-board');
   if (!board) return;
-  read('/rating').then((data) => {
-    const players = Array.isArray(data.players) ? data.players : [];
-    if (!players.length) return;
-    const table = make('table');
-    table.className = 'rating-table';
-    table.append(make('caption', 'Таблица игроков'));
-    const head = table.createTHead().insertRow();
-    ['Место', 'Игрок', 'Рейтинг', 'Игр'].forEach((title) => {
-      const cell = make('th', title);
-      cell.scope = 'col';
-      head.append(cell);
-    });
-    const rows = table.createTBody();
-    const more = table.createTBody();
-    more.id = 'rating-more';
-    more.hidden = true;
-    players.forEach((player, index) => {
-      const row = (index < 5 ? rows : more).insertRow();
-      [player.place, player.nickname, player.elo, player.games].forEach((value) => row.append(make('td', value ?? '')));
-    });
-    board.append(table);
-    if (players.length > 5) {
-      const toggle = make('button', 'Показать всех игроков (' + players.length + ')');
-      toggle.type = 'button';
-      toggle.className = 'rating-toggle';
-      toggle.setAttribute('aria-controls', more.id);
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.addEventListener('click', () => {
-        more.hidden = !more.hidden;
-        toggle.setAttribute('aria-expanded', String(!more.hidden));
-        toggle.textContent = more.hidden ? 'Показать всех игроков (' + players.length + ')' : 'Свернуть список';
+  const controls = document.getElementById('rating-controls');
+  const search = document.getElementById('rating-search');
+  const count = document.getElementById('rating-count');
+  const feedback = document.getElementById('rating-feedback');
+  const empty = document.getElementById('rating-empty');
+  const retry = document.getElementById('rating-retry');
+  const loadRating = async () => {
+    if (retry) retry.hidden = true;
+    if (feedback) { feedback.hidden = false; feedback.textContent = 'Таблица загружается…'; }
+    try {
+      const data = await read('/rating');
+      const players = Array.isArray(data.players) ? data.players : [];
+      if (!players.length) {
+        if (feedback) feedback.textContent = 'В рейтинге пока нет опубликованных игроков. Свои игры можно посмотреть в личном кабинете.';
+        return;
+      }
+      const table = make('table');
+      table.className = 'rating-table';
+      table.append(make('caption', 'Таблица игроков'));
+      const head = table.createTHead().insertRow();
+      ['Место', 'Игрок', 'Рейтинг', 'Игр'].forEach((title) => {
+        const cell = make('th', title);
+        cell.scope = 'col';
+        head.append(cell);
       });
-      board.append(toggle);
+      const rows = table.createTBody();
+      const more = table.createTBody();
+      more.id = 'rating-more';
+      more.hidden = true;
+      const entries = players.map((player, index) => {
+        const row = (index < 5 ? rows : more).insertRow();
+        [player.place, player.nickname, player.elo, player.games].forEach((value) => row.append(make('td', value ?? '')));
+        return { row, nickname: String(player.nickname || '').toLocaleLowerCase('ru-RU') };
+      });
+      board.replaceChildren(table);
+      let expanded = false;
+      let toggle;
+      if (players.length > 5) {
+        toggle = make('button', 'Показать всех игроков (' + players.length + ')');
+        toggle.type = 'button';
+        toggle.className = 'rating-toggle';
+        toggle.setAttribute('aria-controls', more.id);
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.addEventListener('click', () => {
+          expanded = !expanded;
+          more.hidden = !expanded;
+          toggle.setAttribute('aria-expanded', String(!more.hidden));
+          toggle.textContent = more.hidden ? 'Показать всех игроков (' + players.length + ')' : 'Свернуть список';
+        });
+        board.append(toggle);
+      }
+      const filter = () => {
+        const query = search?.value.trim().toLocaleLowerCase('ru-RU') || '';
+        let matches = 0;
+        entries.forEach(entry => {
+          entry.row.hidden = Boolean(query) && !entry.nickname.includes(query);
+          if (!entry.row.hidden) matches += 1;
+        });
+        more.hidden = query ? false : !expanded;
+        if (toggle) toggle.hidden = Boolean(query);
+        if (count) count.textContent = query ? 'Найдено: ' + matches + ' из ' + players.length : 'Всего игроков: ' + players.length;
+        if (empty) empty.hidden = matches > 0;
+        board.hidden = matches === 0;
+      };
+      if (search) search.oninput = filter;
+      if (controls) controls.hidden = false;
+      if (feedback) feedback.hidden = true;
+      board.hidden = false;
+      filter();
+    } catch {
+      if (feedback) feedback.textContent = 'Сейчас таблица не загрузилась. Можно попробовать ещё раз или посмотреть свои результаты в личном кабинете.';
+      if (retry) retry.hidden = false;
     }
-    board.hidden = false;
-  }).catch(() => {});
+  };
+  retry?.addEventListener('click', loadRating);
+  loadRating();
 })();
