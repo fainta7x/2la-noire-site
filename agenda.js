@@ -1,5 +1,5 @@
 (() => {
-  const { read, safeLink, app, info, organizer } = window.club || {};
+  const { read, watch, safeLink, app, info, organizer, resultsDate } = window.club || {};
   if (!read) return;
   const make = (tag, text, cls) => {
     const node = document.createElement(tag);
@@ -230,19 +230,70 @@
   const preview = (id, endpoint, render, onError) => {
     const node = document.getElementById(id);
     if (!node) return;
-    read(endpoint).then((data) => render(node, data)).catch(() => onError?.(node)).catch(() => {});
+    watch(endpoint, data => Promise.resolve(render(node, data)).catch(() => onError?.(node)).catch(() => {}),
+      () => Promise.resolve(onError?.(node)).catch(() => {}));
   };
   const showResults = node => {
     node.hidden = false;
     document.querySelector('[data-results-for="' + node.id + '"]')?.setAttribute('hidden', '');
   };
+  const resultList = (node, endpoint, field, emptyText, render) => {
+    let previous;
+    const status = document.querySelector('[data-results-for="' + node.id + '"]');
+    const updated = make('p', undefined, 'agenda-meta');
+    updated.hidden = true;
+    node.after(updated);
+    const loading = () => {
+      if (status) { status.hidden = false; status.textContent = 'Загружаем опубликованные итоги…'; }
+    };
+    const failed = () => {
+      if (!status) return;
+      status.hidden = false;
+      const retry = make('button', 'Попробовать ещё раз', 'secondary-button');
+      retry.type = 'button';
+      retry.onclick = () => { loading(); window.club.refresh(endpoint).catch(failed); };
+      status.replaceChildren(document.createTextNode('Не получилось загрузить итоги. '), retry);
+    };
+    loading();
+    watch(endpoint, (data, savedAt) => {
+      const items = (data[field] || []).filter(item => endpoint !== '/history' || item.format !== 'NOVICE');
+      if (savedAt) { updated.textContent = resultsDate(savedAt); updated.hidden = false; }
+      const signature = JSON.stringify(data);
+      if (signature === previous) return;
+      previous = signature;
+      if (!items.length) {
+        node.replaceChildren();
+        node.hidden = true;
+        if (status) { status.hidden = false; status.textContent = emptyText; }
+        return;
+      }
+      const hadResults = node.children.length > 0;
+      const opened = new Set(Array.from(node.querySelectorAll('details[open] > summary'), item => item.textContent));
+      const focused = document.activeElement?.matches('summary') && node.contains(document.activeElement) ? document.activeElement.textContent : null;
+      render(data);
+      if (hadResults) node.querySelectorAll('details').forEach(item => { item.open = opened.has(item.querySelector('summary')?.textContent); });
+      if (focused) Array.from(node.querySelectorAll('summary')).find(item => item.textContent === focused)?.focus({ preventScroll: true });
+    }, failed);
+  };
 
   const showResult = (node, item, title, description, fallback) => {
+    node.pendingResult = null;
     const cached = node.querySelector('.result-picture');
     const url = safeLink(item.image, new URL(app).origin);
     if (cached && cached.href === url &&
         (cached.dataset.games === undefined || cached.dataset.games === String(item.games))) return;
-    node.replaceChildren(make('h3', title), picture(item.image, description, fallback));
+    const next = picture(item.image, description, fallback);
+    const image = next.querySelector?.('img');
+    if (cached && image) {
+      // Keep the already visible local thumbnail until the new API image is ready.
+      node.pendingResult = next;
+      image.loading = 'eager';
+      image.addEventListener('load', () => {
+        if (node.pendingResult === next) node.replaceChildren(make('h3', title), next);
+      }, { once: true });
+      return;
+    }
+    node.replaceChildren(make('h3', title), next);
   };
 
   preview('club-evening', '/history', (node, data) => {
@@ -317,7 +368,7 @@
   });
 
   const tournaments = document.getElementById('tournament-results');
-  if (tournaments) read('/tournaments').then((data) => {
+  if (tournaments) resultList(tournaments, '/tournaments', 'tournaments', 'Опубликованных итогов турниров пока нет.', (data) => {
     const items = Array.isArray(data.tournaments) ? data.tournaments : [];
     if (!items.length) return;
     tournaments.replaceChildren(make('h2', 'Опубликованные таблицы'), ...items.map((item, index) => {
@@ -330,10 +381,10 @@
       return block;
     }));
     showResults(tournaments);
-  }).catch(() => {});
+  });
 
   const seasons = document.getElementById('season-results');
-  if (seasons) read('/seasons').then((data) => {
+  if (seasons) resultList(seasons, '/seasons', 'seasons', 'Опубликованных таблиц сезонов пока нет.', (data) => {
     const items = Array.isArray(data.seasons) ? data.seasons : [];
     if (!items.length) return;
     seasons.replaceChildren(make('h2', 'Итоги сезонов'), ...items.map((item, index) => {
@@ -349,10 +400,10 @@
       return block;
     }));
     showResults(seasons);
-  }).catch(() => {});
+  });
 
   const history = document.getElementById('evening-history');
-  if (history) read('/history').then((data) => {
+  if (history) resultList(history, '/history', 'evenings', 'Опубликованных итогов клубных вечеров пока нет.', (data) => {
     const items = Array.isArray(data.evenings) ? data.evenings.filter(item => item.format !== 'NOVICE') : [];
     if (!items.length) return;
     history.replaceChildren(make('h2', 'Опубликованные итоги'), ...items.map((item, index) => {
@@ -370,5 +421,5 @@
       return block;
     }));
     showResults(history);
-  }).catch(() => {});
+  });
 })();

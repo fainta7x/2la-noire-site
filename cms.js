@@ -124,74 +124,88 @@
   const feedback = document.getElementById('rating-feedback');
   const empty = document.getElementById('rating-empty');
   const retry = document.getElementById('rating-retry');
-  const loadRating = async () => {
+  let expanded = false;
+  let previousRating;
+  const updated = make('p');
+  updated.className = 'agenda-meta';
+  updated.hidden = true;
+  board.after(updated);
+  const renderRating = (data, savedAt) => {
     if (retry) retry.hidden = true;
-    if (feedback) { feedback.hidden = false; feedback.textContent = 'Таблица загружается…'; }
-    try {
-      const data = await read('/rating');
-      const players = Array.isArray(data.players) ? data.players : [];
-      if (!players.length) {
-        if (feedback) feedback.textContent = 'В рейтинге пока нет опубликованных игроков. Свои игры можно посмотреть в личном кабинете.';
-        return;
-      }
-      const table = make('table');
-      table.className = 'rating-table';
-      table.append(make('caption', 'Таблица игроков'));
-      const head = table.createTHead().insertRow();
-      ['Место', 'Игрок', 'Рейтинг', 'Игр'].forEach((title) => {
-        const cell = make('th', title);
-        cell.scope = 'col';
-        head.append(cell);
-      });
-      const rows = table.createTBody();
-      const more = table.createTBody();
-      more.id = 'rating-more';
-      more.hidden = true;
-      const entries = players.map((player, index) => {
-        const row = (index < 5 ? rows : more).insertRow();
-        [player.place, player.nickname, player.elo, player.games].forEach((value) => row.append(make('td', value ?? '')));
-        return { row, nickname: String(player.nickname || '').toLocaleLowerCase('ru-RU') };
-      });
-      board.replaceChildren(table);
-      let expanded = false;
-      let toggle;
-      if (players.length > 5) {
-        toggle = make('button', 'Показать всех игроков (' + players.length + ')');
-        toggle.type = 'button';
-        toggle.className = 'rating-toggle';
-        toggle.setAttribute('aria-controls', more.id);
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.addEventListener('click', () => {
-          expanded = !expanded;
-          more.hidden = !expanded;
-          toggle.setAttribute('aria-expanded', String(!more.hidden));
-          toggle.textContent = more.hidden ? 'Показать всех игроков (' + players.length + ')' : 'Свернуть список';
-        });
-        board.append(toggle);
-      }
-      const filter = () => {
-        const query = search?.value.trim().toLocaleLowerCase('ru-RU') || '';
-        let matches = 0;
-        entries.forEach(entry => {
-          entry.row.hidden = Boolean(query) && !entry.nickname.includes(query);
-          if (!entry.row.hidden) matches += 1;
-        });
-        more.hidden = query ? false : !expanded;
-        if (toggle) toggle.hidden = Boolean(query);
-        if (count) count.textContent = query ? 'Найдено: ' + matches + ' из ' + players.length : 'Всего игроков: ' + players.length;
-        if (empty) empty.hidden = matches > 0;
-        board.hidden = matches === 0;
-      };
-      if (search) search.oninput = filter;
-      if (controls) controls.hidden = false;
-      if (feedback) feedback.hidden = true;
-      board.hidden = false;
-      filter();
-    } catch {
-      if (feedback) feedback.textContent = 'Сейчас таблица не загрузилась. Можно попробовать ещё раз или посмотреть свои результаты в личном кабинете.';
-      if (retry) retry.hidden = false;
+    if (savedAt) { updated.textContent = window.club.resultsDate(savedAt); updated.hidden = false; }
+    const signature = JSON.stringify(data);
+    if (signature === previousRating) return;
+    previousRating = signature;
+    const players = Array.isArray(data.players) ? data.players : [];
+    if (!players.length) {
+      board.hidden = true;
+      if (controls) controls.hidden = true;
+      if (empty) empty.hidden = true;
+      if (feedback) feedback.hidden = false;
+      if (feedback) feedback.textContent = 'В рейтинге пока нет опубликованных игроков. Свои игры можно посмотреть в личном кабинете.';
+      return;
     }
+    const table = make('table');
+    table.className = 'rating-table';
+    table.append(make('caption', 'Таблица игроков'));
+    const head = table.createTHead().insertRow();
+    ['Место', 'Игрок', 'Рейтинг', 'Игр'].forEach((title) => {
+      const cell = make('th', title);
+      cell.scope = 'col';
+      head.append(cell);
+    });
+    const rows = table.createTBody();
+    const more = table.createTBody();
+    more.id = 'rating-more';
+    more.hidden = !expanded;
+    const entries = players.map((player, index) => {
+      const row = (index < 5 ? rows : more).insertRow();
+      [player.place, player.nickname, player.elo, player.games].forEach((value) => row.append(make('td', value ?? '')));
+      return { row, nickname: String(player.nickname || '').toLocaleLowerCase('ru-RU') };
+    });
+    board.replaceChildren(table);
+    let toggle;
+    if (players.length > 5) {
+      toggle = make('button', expanded ? 'Свернуть список' : 'Показать всех игроков (' + players.length + ')');
+      toggle.type = 'button';
+      toggle.className = 'rating-toggle';
+      toggle.setAttribute('aria-controls', more.id);
+      toggle.setAttribute('aria-expanded', String(expanded));
+      toggle.addEventListener('click', () => {
+        expanded = !expanded;
+        more.hidden = !expanded;
+        toggle.setAttribute('aria-expanded', String(!more.hidden));
+        toggle.textContent = more.hidden ? 'Показать всех игроков (' + players.length + ')' : 'Свернуть список';
+      });
+      board.append(toggle);
+    }
+    const filter = () => {
+      const query = search?.value.trim().toLocaleLowerCase('ru-RU') || '';
+      let matches = 0;
+      entries.forEach(entry => {
+        entry.row.hidden = Boolean(query) && !entry.nickname.includes(query);
+        if (!entry.row.hidden) matches += 1;
+      });
+      more.hidden = query ? false : !expanded;
+      if (toggle) toggle.hidden = Boolean(query);
+      if (count) count.textContent = query ? 'Найдено: ' + matches + ' из ' + players.length : 'Всего игроков: ' + players.length;
+      if (empty) empty.hidden = matches > 0;
+      board.hidden = matches === 0;
+    };
+    if (search) search.oninput = filter;
+    if (controls) controls.hidden = false;
+    if (feedback) feedback.hidden = true;
+    board.hidden = false;
+    filter();
   };
-  retry?.addEventListener('click', loadRating);
-  loadRating();
+  const ratingError = () => {
+    if (feedback) { feedback.hidden = false; feedback.textContent = 'Сейчас таблица не загрузилась. Можно попробовать ещё раз или посмотреть свои результаты в личном кабинете.'; }
+    if (retry) retry.hidden = false;
+  };
+  retry?.addEventListener('click', () => {
+    retry.hidden = true;
+    if (feedback) { feedback.hidden = false; feedback.textContent = 'Таблица загружается…'; }
+    window.club.refresh('/rating').catch(ratingError);
+  });
+  window.club.watch('/rating', renderRating, ratingError);
 })();

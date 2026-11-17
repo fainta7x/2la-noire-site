@@ -1,6 +1,7 @@
 """Build self-contained Pages HTML so each document carries its own CSS and JS."""
 
 import argparse
+import json
 import re
 import shutil
 from pathlib import Path
@@ -26,7 +27,7 @@ def inline_asset(name, allowed, tag):
     return f'<{tag} data-source="{name}">\n{content.rstrip()}\n</{tag}>'
 
 
-def build_page(path):
+def build_page(path, public_data=None):
     html = (ROOT / path).read_text(encoding='utf-8')
     route = '/' + path.removesuffix('index.html')
     for name in ('header', 'footer'):
@@ -46,6 +47,10 @@ def build_page(path):
         scripts.append(inline_asset(match[1], SCRIPTS, 'script'))
     html = DEFERRED.sub('', html)
     if scripts:
+        if public_data:
+            # Data is inert JSON; escape HTML delimiters even inside nicknames/titles.
+            payload = json.dumps(public_data, ensure_ascii=False, separators=(',', ':')).replace('&', '\\u0026').replace('<', '\\u003c').replace('>', '\\u003e')
+            scripts.insert(0, '<script type="application/json" id="club-public-data">' + payload + '</script>')
         html = html.replace('</body>', '\n'.join(scripts) + '\n</body>', 1)
     if re.search(r'<(?:link[^>]+rel="stylesheet"|script[^>]+src="[^"]+\.js")', html):
         raise ValueError(f'Unbundled CSS or JavaScript in {path}')
@@ -55,7 +60,10 @@ def build_page(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('output', type=Path)
-    output = parser.parse_args().output
+    parser.add_argument('--public-data', type=Path, help='Preloaded anonymous results from update-public-data.py')
+    args = parser.parse_args()
+    output = args.output
+    public_data = json.loads(args.public_data.read_text(encoding='utf-8')) if args.public_data else None
     output.mkdir(parents=True, exist_ok=True)
     for folder in ('img', 'fonts'):
         shutil.copytree(ROOT / folder, output / folder, dirs_exist_ok=True)
@@ -67,7 +75,7 @@ def main():
     for filename in PAGES:
         target = output / filename
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(build_page(filename), encoding='utf-8')
+        target.write_text(build_page(filename, public_data), encoding='utf-8')
 
 
 if __name__ == '__main__':
